@@ -1,6 +1,4 @@
-﻿#include <chrono>
-#include <iostream>
-#include <cmath>
+#include "Graph.h"
 
 #define PI 3.14f
 
@@ -27,11 +25,7 @@ int yPos[graphColumnsCount * graphRowsCount] = { 0 };
 bool direction = true;
 char consoleBuffer[graphRowsCount][length + 1];
 
-void calculatePositions();
-void draw();
-
-int main()
-{
+void displayGraphs() {
     //Holders for time between refreshes
     std::chrono::high_resolution_clock::time_point begin, end;
 
@@ -40,9 +34,14 @@ int main()
     int frameBuffer = 0;
     float timer = 0;
     float timePassed = .0f;
-    
+
     while (true)
     {
+        if (GetKeyState((unsigned short)'Q') - 1 < -126)
+        {
+            break;
+        }
+
         //Starts timer and refreshes console
         begin = std::chrono::high_resolution_clock::now();
         system("cls");
@@ -50,7 +49,7 @@ int main()
         //Calculates y positions and prints consoleBuffer to console
         calculatePositions();
         draw();
-        
+
         //Timer logic and refresh counter
         if (timer >= 1.0f)
         {
@@ -75,10 +74,9 @@ int main()
         timePassed = std::chrono::duration<float>(end - begin).count();
         timer += timePassed;
 
-        std::cout << "Refreshes per second: " << frameBuffer << "\nTime between refreshes: " << timePassed << "s";
+        std::cout << "Refreshes per second: " << frameBuffer << "\nTime between refreshes: " << timePassed << "s\n";
+        std::cout << "(Press 'Q' to go back to menu)";
     }
-
-    return 0;
 }
 
 void calculatePositions()
@@ -99,7 +97,7 @@ void draw()
 {
     /*Since each row of a consoleBuffer displays first rows of each individual graph, the most
     reasonable solution was to use triple loops. y - loop cycles through each row of symbols,
-    i - loop cycles through parts of each graph on the current y-row, x - loop cycles through 
+    i - loop cycles through parts of each graph on the current y-row, x - loop cycles through
     each character in the current part of the current graph*/
 
     //First loop handles two rows of graphs, index represents current row of graphs
@@ -126,13 +124,13 @@ void draw()
             for (int i = 0; i < graphColumnsCount; i++) {
                 for (int x = 0; x < width; x++) {
 
-                    /*[y * graphColumnsCount * (width + 1) + i * (width + 1) + x] represents indices for characters from one row 
+                    /*[y * graphColumnsCount * (width + 1) + i * (width + 1) + x] represents indices for characters from one row
                     of the consoleBuffer, same as with names, but adjusted for y-loop.
-                    Each character in a row is checked for x and y coordinate and then replaced with @ if x and y match 
+                    Each character in a row is checked for x and y coordinate and then replaced with @ if x and y match
                     calculated position for a graph.
                     [index * graphColumnsCount + i] represents index for calculated y coordinate of the corresponding graph.
                     calculated position yPos is adjusted by 1 to prevent overlapping yPos coordinates and names*/
-                    consoleBuffer[index][y * graphColumnsCount * (width + 1) + i * (width + 1) + x] = 
+                    consoleBuffer[index][y * graphColumnsCount * (width + 1) + i * (width + 1) + x] =
                         (x == xPos && y == yPos[index * graphColumnsCount + i] + 1) ? '@' : '.';
                 }
                 //Represents a character between parts of each graph on the current y-row, but adjusted for y-loop
@@ -143,7 +141,7 @@ void draw()
         }
         //Represents last character in a string
         consoleBuffer[index][length] = '\0';
-        
+
         std::cout << consoleBuffer[index] << std::endl;
     }
 }
