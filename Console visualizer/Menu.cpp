@@ -1,30 +1,44 @@
-﻿/*Todo: Rewrite graph benchmarking into a separate Timer class;
-* Try to use enter, escape or space keys for menu;
-* Look into other ways of getting input from keyboard
+﻿/*Todo: 
+* improve AddToScreenBuffer with generics
+* improve stats display 
 */
 
+#include "Timer.h"
 #include "Graph.h"
 
 int main()
 {
-    const char* input = NULL;
-
+    // Create Screen Buffer
+    wchar_t* screen = new wchar_t[screenWidth * screenHeight + 1];
+    HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+    SetConsoleActiveScreenBuffer(hConsole);
+    DWORD dwBytesWritten = 0;
+    
     while (true)
     {
-        if (GetKeyState((unsigned short)'Q') - 1 < -126)
+        initBuffer(screen);
+        
+        if (GetKeyState(VK_ESCAPE) & 0x8000)
         {
+            Sleep(350);
             break;
         }
         
-        if (GetKeyState((unsigned short)'F') - 1 < -126)
+        if (GetKeyState(VK_RETURN) & 0x8000)
         {
-            displayGraphs();
+            Sleep(350);
+            displayGraphs(screen, &hConsole, &dwBytesWritten);
         }
 
-        system("cls");
-        std::cout << "Trigonometric functions movement <--\n";
-        std::cout << "('Q' to quit/'F' to choose)";
+        //Display menu
+        addToScreenBuffer(0, 0, "Trigonometric functions movement [Enter] to open", screen);
+        addToScreenBuffer(0, 1, "[Esc] to quit", screen);
+
+        screen[screenWidth * screenHeight] = '\0';
+        WriteConsoleOutputCharacter(hConsole, screen, screenWidth * screenHeight, { 0,0 }, &dwBytesWritten);
     }
 
+    delete[] screen;
+    screen = nullptr;
     return 0;
 }

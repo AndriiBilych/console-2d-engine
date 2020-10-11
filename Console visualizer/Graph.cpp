@@ -1,147 +1,178 @@
 #include "Graph.h"
+#include "Timer.h"
+
+#include <cmath>
 
 #define PI 3.14f
 
-//Initial values for the graph size, amount, string length and labels
-const int width = 20;
-const int height = 10;
-const int graphColumnsCount = 4;
-const int graphRowsCount = 2;
-constexpr int length = graphColumnsCount * (height + 1) * (width + 1);
-const char names[graphColumnsCount * graphRowsCount][width] = {
-    {"y = -x"},
-    {"y = x"},
-    {"y = -x^2"},
-    {"y = x^2"},
-    {"y = sin(x)"},
-    {"y = cos(x)"},
-    {"y = atan(x)"},
-    {"y = -atan(x)"}
-};
+void displayGraphs(wchar_t* screen, HANDLE* hConsole, DWORD* dwBytesWritten) {
+    Vector2 positions[graphCount * graphWidth];
+    std::string names[graphCount];
 
-//X is the same for all graphs for the sake of synchronized movement
-int xPos = 0;
-int yPos[graphColumnsCount * graphRowsCount] = { 0 };
-bool direction = true;
-char consoleBuffer[graphRowsCount][length + 1];
+    bool direction = true;
+    int iterator = 0;
 
-void displayGraphs() {
-    //Holders for time between refreshes
-    std::chrono::high_resolution_clock::time_point begin, end;
+    float deltaTime = 0;
+    float secTimer = 0;
+    float iteratorTimer = 0;
+    int refreshes = 0;
+    int rps = 0;
 
-    //Stores information about amount and time of refreshes
-    int frameCount = 0;
-    int frameBuffer = 0;
-    float timer = 0;
-    float timePassed = .0f;
+    names[0] = "y = x";
+    names[1] = "y = -x";
+    names[2] = "y = x^2";
+    names[3] = "y = -x^2";
+    names[4] = "y = sin(x)";
+    names[5] = "y = cos(x)";
+    names[6] = "y = atan(x)";
+    names[7] = "y = -atan(x)";
 
+    calculatePositions(positions);
+
+    initBuffer(screen);
+    
     while (true)
     {
-        if (GetKeyState((unsigned short)'Q') - 1 < -126)
+        Timer timer(&deltaTime);
+        secTimer += deltaTime;
+        iteratorTimer += deltaTime;
+        refreshes++;
+
+        if (GetKeyState(VK_ESCAPE) & 0x8000)
         {
+            Sleep(350);
             break;
         }
 
-        //Starts timer and refreshes console
-        begin = std::chrono::high_resolution_clock::now();
-        system("cls");
-
-        //Calculates y positions and prints consoleBuffer to console
-        calculatePositions();
-        draw();
-
-        //Timer logic and refresh counter
-        if (timer >= 1.0f)
+        for (int i = 0; i < 2; i++)
         {
-            frameBuffer = frameCount;
-            frameCount = 0;
-            timer = 0;
-        }
-        else if (timer >= 1.0f / 20.0f)
-        {
-            if (xPos <= 0)
-                direction = true;
-
-            if (xPos >= width - 1)
-                direction = false;
-
-            direction ? xPos++ : xPos--;
+            for (int j = 0; j < graphCount / 2; j++)
+            {
+                addToScreenBuffer(
+                    (graphWidth + 1) * j, 
+                    (graphHeight + 2) * i, 
+                    names[i * graphCount / 2 + j],
+                    screen
+                );
+                addGraphToScreenBuffer(
+                    (graphWidth + 1) * j, 
+                    (graphHeight + 2) * i + 1, 
+                    &positions[graphWidth * (i * graphCount / 2 + j)],
+                    &iterator,
+                    screen
+                );
+            }
         }
 
-        //Stop timer and calculate amount of refreshes
-        end = std::chrono::high_resolution_clock::now();
-        frameCount++;
-        timePassed = std::chrono::duration<float>(end - begin).count();
-        timer += timePassed;
+        //Add stats to buffer
+        addToScreenBuffer(0, (graphHeight + 2) * 2, "deltaTime: ", deltaTime, screen);
+        addToScreenBuffer(0, (graphHeight + 2) * 2 + 1, "rps: ", rps, screen);
+        addToScreenBuffer(0, (graphHeight + 2) * 2 + 2, "[Escape] to quit", screen);
 
-        std::cout << "Refreshes per second: " << frameBuffer << "\nTime between refreshes: " << timePassed << "s\n";
-        std::cout << "(Press 'Q' to go back to menu)";
+        //1s timer for calculating stats
+        if (secTimer >= 1.0f)
+        {
+            secTimer -= 1.0f;
+            rps = refreshes;
+            refreshes = 0;
+        }
+
+        //.1s timer for moving the iterator
+        if (iteratorTimer >= .1f)
+        {
+            iteratorTimer -= .1f;
+            direction ? iterator++ : iterator--;
+            if (iterator == 0 || iterator == graphWidth - 1)
+                direction = direction ? false : true;
+        }
+        
+        screen[screenWidth * screenHeight] = '\0';
+        WriteConsoleOutputCharacter(*hConsole, screen, screenWidth * screenHeight, { 0,0 }, dwBytesWritten);
     }
 }
 
-void calculatePositions()
+void addToScreenBuffer(int x, int y, std::string_view str, wchar_t* screen)
 {
-    /*Most of the functions are either flipped or modified since symbols on console are printed from top left corner,
-    also square grid doesn't look square in console, so a 20x10 grid is used and that is why all functions are extended*/
-    yPos[0] = xPos / 2; //Diagonal line
-    yPos[1] = height - 1 - xPos / 2; //Diagonal line flipped
-    yPos[2] = (xPos - height) * (xPos - height) / (height - 1); //Parabola
-    yPos[3] = height - 1 - (xPos - height) * (xPos - height) / (height - 1); //Parabola flipped
-    yPos[4] = round((height / 2 - 1) * sin(xPos / 2.0f - PI / 2.0f) + height / 2); //Sin function represented on a 20x10 grid
-    yPos[5] = round(height / 2 - (height / 2 - 1) * cos(xPos / 2.0f - PI)); //Cos function represented on a 20x10 grid
-    yPos[6] = 2 * PI * atan(xPos); //atan function represented on a 20x10 grid
-    yPos[7] = height - 1 - 2 * (PI * atan(xPos)); //atan function flipped represented on a 20x10 grid
+    for (int i = 0; i < str.length(); i++)
+        screen[y * screenWidth + x + i] = str[i];
 }
 
-void draw()
+void addToScreenBuffer(int x, int y, const char* str, float num, wchar_t* screen)
 {
-    /*Since each row of a consoleBuffer displays first rows of each individual graph, the most
-    reasonable solution was to use triple loops. y - loop cycles through each row of symbols,
-    i - loop cycles through parts of each graph on the current y-row, x - loop cycles through
-    each character in the current part of the current graph*/
+    int i;
+    for (i = 0; str[i] != '\0'; i++)
+        screen[y * screenWidth + x + i] = str[i];
 
-    //First loop handles two rows of graphs, index represents current row of graphs
-    for (int index = 0; index < graphRowsCount; index++)
+    char holder[20] = { 0 };
+    sprintf_s(holder, "%f s", num);
+    for (int j = 0; holder[j] != '\0'; i++, j++)
+        screen[y * screenWidth + x + i] = holder[j];
+}
+
+void addToScreenBuffer(int x, int y, const char* str, int num, wchar_t* screen)
+{
+    int i;
+    for (i = 0; str[i] != '\0'; i++)
+        screen[y * screenWidth + x + i] = str[i];
+
+    char holder[10] = { 0 };
+    sprintf_s(holder, "%i", num);
+    for (int j = 0; holder[j] != '\0'; i++, j++)
+        screen[y * screenWidth + x + i] = holder[j];
+}
+
+void initBuffer(wchar_t* screen)
+{
+    for (int i = 0; i < screenWidth * screenHeight; i++)
+        screen[i] = ' ';
+}
+
+void addGraphToScreenBuffer(int offsetX, int offsetY, Vector2* pos, int* iterator, wchar_t* screen)
+{
+    for (int y = offsetY; y < graphHeight + offsetY; y++)
     {
-        /*This part puts names of the graphs on the first row of console buffer.*/
-        for (int i = 0; i < graphColumnsCount; i++) {
-            for (int x = 0; x < width; x++) {
-
-                //[i * (width + 1) + x] represents indices for characters from one row of the consoleBuffer
-                /*[index * graphColumnsCount + i] represents indices for pointers to arrays of name characters,
-                and is adjusted for index because graphs are split into two rows*/
-                consoleBuffer[index][i * (width + 1) + x] =
-                    (names[index * graphColumnsCount + i][x] != NULL) ? names[index * graphColumnsCount + i][x] : ' ';
-            }
-            //Represents a character between parts of each graph on the current y-row
-            consoleBuffer[index][i * (width + 1) + width] = ' ';
+        for (int x = offsetX; x < graphWidth + offsetX; x++)
+        {
+            /*If current character's indices(x, y) suffice graph positions and iterator coordinate assign '@',
+            * if x is different from iterator assign '+', and if both x and y don'f suffice
+            * graph positions assign '.'
+            */
+            screen[y * screenWidth + x] =
+                (x == pos[x - offsetX].x + offsetX && graphHeight - 1 - y + 2 * offsetY == pos[x - offsetX].y + offsetY) ?
+                (x - offsetX == *iterator) ? '@' : '+' : '.';
         }
-        //Represents a character at the end of a current y-row
-        consoleBuffer[index][graphColumnsCount * (width + 1) - 1] = '\n';
-
-        /*This part builds graphs in a console buffer.*/
-        for (int y = 1; y < height + 1; y++) {
-            for (int i = 0; i < graphColumnsCount; i++) {
-                for (int x = 0; x < width; x++) {
-
-                    /*[y * graphColumnsCount * (width + 1) + i * (width + 1) + x] represents indices for characters from one row
-                    of the consoleBuffer, same as with names, but adjusted for y-loop.
-                    Each character in a row is checked for x and y coordinate and then replaced with @ if x and y match
-                    calculated position for a graph.
-                    [index * graphColumnsCount + i] represents index for calculated y coordinate of the corresponding graph.
-                    calculated position yPos is adjusted by 1 to prevent overlapping yPos coordinates and names*/
-                    consoleBuffer[index][y * graphColumnsCount * (width + 1) + i * (width + 1) + x] =
-                        (x == xPos && y == yPos[index * graphColumnsCount + i] + 1) ? '@' : '.';
-                }
-                //Represents a character between parts of each graph on the current y-row, but adjusted for y-loop
-                consoleBuffer[index][y * graphColumnsCount * (width + 1) + i * (width + 1) + width] = ' ';
-            }
-            //Represents a character at the end of a current y-row, but adjusted for y-loop
-            consoleBuffer[index][(y + 1) * graphColumnsCount * (width + 1) - 1] = '\n';
-        }
-        //Represents last character in a string
-        consoleBuffer[index][length] = '\0';
-
-        std::cout << consoleBuffer[index] << std::endl;
     }
+}
+
+void calculatePositions(Vector2* pos)
+{
+    for (int j = 0; j < graphCount; j++)
+        for (int i = 0; i < graphWidth; i++)
+            pos[j * graphWidth + i].x = i;
+    
+    int i = 0;
+    for (; i < graphWidth; i++)
+        pos[i].y = pos[i].x / 2;
+
+    for (; i < graphWidth * 2; i++)
+        pos[i].y = graphHeight - 1 - pos[i].x / 2;
+
+    for (; i < graphWidth * 3; i++)
+        pos[i].y = (int)pow(graphHeight - 1 - pos[i].x, 2) / (graphHeight - 1);
+
+    for (; i < graphWidth * 4; i++)
+        pos[i].y = graphHeight - 1 - (int)pow(graphHeight - 1 - pos[i].x, 2) / (graphHeight - 1);
+
+    //Derived variant since normal sine function ranges from 1 to -1 in height and PI intervals in length
+    for (; i < graphWidth * 5; i++)
+        pos[i].y = round((graphHeight / 2 - 1) * sin(pos[i].x / 2.0f - PI / 2.0f) + graphHeight / 2); 
+
+    for (; i < graphWidth * 6; i++)
+        pos[i].y = round(graphHeight / 2 - (graphHeight / 2 - 1) * cos(pos[i].x / 2.0f - PI));
+
+    for (; i < graphWidth * 7; i++)
+        pos[i].y = (int)(2 * PI * atan(pos[i].x));
+
+    for (; i < graphWidth * 8; i++)
+        pos[i].y = graphHeight - 1 - (int)(2 * (PI * atan(pos[i].x)));
 }
