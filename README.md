@@ -10,7 +10,7 @@ keyboard input handling and benchmarking class.
 
 I am currently working on a few games and ideas to add to this project.
 
-![image](Screenchot.png)
+![Screenshot](Screenshot.png)
 
 Important
 ---------
