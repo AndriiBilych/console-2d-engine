@@ -13,10 +13,7 @@ void displayGraphs(wchar_t* screen, HANDLE* hConsole, DWORD* dwBytesWritten) {
     int iterator = 0;
 
     float deltaTime = 0;
-    float secTimer = 0;
     float iteratorTimer = 0;
-    int refreshes = 0;
-    int rps = 0;
 
     names[0] = "y = x";
     names[1] = "y = -x";
@@ -34,9 +31,7 @@ void displayGraphs(wchar_t* screen, HANDLE* hConsole, DWORD* dwBytesWritten) {
     while (true)
     {
         Timer timer(&deltaTime);
-        secTimer += deltaTime;
         iteratorTimer += deltaTime;
-        refreshes++;
 
         if (GetKeyState(VK_ESCAPE) & 0x8000)
         {
@@ -65,17 +60,10 @@ void displayGraphs(wchar_t* screen, HANDLE* hConsole, DWORD* dwBytesWritten) {
         }
 
         //Add stats to buffer
-        addToScreenBuffer(0, (graphHeight + 2) * 2, "deltaTime: ", deltaTime, screen);
-        addToScreenBuffer(0, (graphHeight + 2) * 2 + 1, "rps: ", rps, screen);
-        addToScreenBuffer(0, (graphHeight + 2) * 2 + 2, "[Escape] to quit", screen);
+        swprintf_s(&screen[screenWidth * graphHeight * 2 + 4 * screenWidth], 30, L"deltaTime: %0.5fs FPS: %4.0f", deltaTime, 1.0f / deltaTime);
 
-        //1s timer for calculating stats
-        if (secTimer >= 1.0f)
-        {
-            secTimer -= 1.0f;
-            rps = refreshes;
-            refreshes = 0;
-        }
+        //swprintf_s prints string including \0 character, that's why I use a custom function
+        addToScreenBuffer(0, (graphHeight + 2) * 2 + 1, "[Escape] to quit", screen);
 
         //.1s timer for moving the iterator
         if (iteratorTimer >= .1f)
@@ -95,30 +83,6 @@ void addToScreenBuffer(int x, int y, std::string_view str, wchar_t* screen)
 {
     for (int i = 0; i < str.length(); i++)
         screen[y * screenWidth + x + i] = str[i];
-}
-
-void addToScreenBuffer(int x, int y, const char* str, float num, wchar_t* screen)
-{
-    int i;
-    for (i = 0; str[i] != '\0'; i++)
-        screen[y * screenWidth + x + i] = str[i];
-
-    char holder[20] = { 0 };
-    sprintf_s(holder, "%f s", num);
-    for (int j = 0; holder[j] != '\0'; i++, j++)
-        screen[y * screenWidth + x + i] = holder[j];
-}
-
-void addToScreenBuffer(int x, int y, const char* str, int num, wchar_t* screen)
-{
-    int i;
-    for (i = 0; str[i] != '\0'; i++)
-        screen[y * screenWidth + x + i] = str[i];
-
-    char holder[10] = { 0 };
-    sprintf_s(holder, "%i", num);
-    for (int j = 0; holder[j] != '\0'; i++, j++)
-        screen[y * screenWidth + x + i] = holder[j];
 }
 
 void initBuffer(wchar_t* screen)

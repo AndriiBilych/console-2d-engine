@@ -21,8 +21,6 @@ public:
 };
 
 void addToScreenBuffer(int, int, std::string_view, wchar_t*);
-void addToScreenBuffer(int, int, const char*, float, wchar_t*);
-void addToScreenBuffer(int, int, const char*, int, wchar_t*);
 void displayGraphs(wchar_t*, HANDLE*, DWORD*);
 void initBuffer(wchar_t*);
 void addGraphToScreenBuffer(int, int, Vector2*, int*, wchar_t*);

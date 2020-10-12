@@ -1,6 +1,5 @@
 ﻿/*Todo: 
-* improve AddToScreenBuffer with generics
-* improve stats display 
+* Wrap consoleBuffer creation and drawing to in a separate class/library
 */
 
 #include "Timer.h"
