@@ -10,8 +10,6 @@ keyboard input handling and benchmarking class.
 
 I am currently working on a few games and ideas to add to this project.
 
-![Screenshot](Screenshot.png)
-
 Important
 ---------
 For correct display the console properties and default settings must be changed to the following
