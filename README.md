@@ -3,28 +3,20 @@ Console Visualiser
 
 Description
 ---------
-
 This is a learning project in C++. I am exploring some ideas I've come up with while learning C++.
-Currently features a very basic framework for drawing 2d graphics using ASCII characters, menu, 
-keyboard input handling and benchmarking class. 
+Currently features a very basic framework for drawing 2d graphics using ASCII characters
 
 I am currently working on a few games and ideas to add to this project.
 
-Important
+Using the engine
 ---------
-For correct display the console properties and default settings must be changed to the following
-Screen buffer size
-width: 100
-height: 40
-
-Window size
-width: 100
-height: 40
+Engine is greatly simplified version of olcConsoleGameEngine by javidx9 and to use it a project class must inherit from the 
+engine class.
 
 Compiling & Running
 ---------
-Currently a standard VS2019 is used for building and compiling the project (Currently looking into the advantages of using g++)
+The project was built with MSVC and Visual Studio 2019
 
-Trigonometric functions
+Graphs
 ---------
-Features 8 graphs that describe 8 functions.
+First project features 8 trigonometric functions and a pointers moving on the graphs.
