@@ -2,18 +2,13 @@
 
 #define PI 3.14f
 
-Graphs::Graphs()
+Graphs::Graphs(int width, int height, int fontWidth, int fontHeight)
+    : Engine(width, height, fontWidth, fontHeight)
 {
-    positions = new Vector2[graphCount * graphWidth];
+    positions.reserve(graphCount * graphWidth);
     direction = true;
     stepCounter = 0;
     stepTimer = .0f;
-}
-
-Graphs::~Graphs()
-{
-    delete[] positions;
-    positions = nullptr;
 }
 
 bool Graphs::Start()
@@ -26,9 +21,11 @@ bool Graphs::Update(float deltaTime)
 {
     stepTimer += deltaTime;
 
+    //Draw first layer
     for (int i = 0; i < graphCount / 2; i++)
         DrawGraph(i * (graphWidth + space), 1, i);
 
+    //Draw second layer
     for (int i = 0; i < graphCount / 2; i++)
         DrawGraph(i * (graphWidth + space), (graphHeight + space), i + graphCount / 2);
 
@@ -54,6 +51,9 @@ void Graphs::DrawGraph(int xOffset, int yOffset, int index)
     for (int y = 0; y < graphHeight; y++)
         for (int x = 0; x < graphWidth; x++)
         {
+            //if the current buffer coordinate equals corresponding graph coordinate put '.' character,
+            //if the current buffer coordinate equals caret(step) coordinate put '@' character,
+            //else leave blank
             auto c = 
                 (x == positions[index * graphWidth + x].x && y == positions[index * graphWidth + x].y) ? 
                 (x == stepCounter) ? '@' : '.' : ' ';
@@ -66,31 +66,27 @@ void Graphs::CalculatePositions()
 {
     for (int j = 0; j < graphCount; j++)
         for (int i = 0; i < graphWidth; i++)
-            positions[j * graphWidth + i].x = i;
+            positions.emplace_back(Vector2(i, 0));
     
-    int i = 0;
-    for (; i < graphWidth; i++)
-        positions[i].y = positions[i].x;
+    auto begin = positions.begin();
 
-    for (; i < graphWidth * 2; i++)
-        positions[i].y = graphHeight - 1 - positions[i].x;
+    //Character buffer draws character from top left corner to bottom right corner, thus to match the functions
+    //coordinates have to be flipped
+    std::for_each(begin, begin + graphWidth, 
+        [](Vector2 &pos) { pos.y = pos.x; });
+    std::for_each(begin + graphWidth, begin + graphWidth * 2, 
+        [=](Vector2 &pos) { pos.y = graphHeight - 1 - pos.x; });
+    std::for_each(begin + graphWidth * 2, begin + graphWidth * 3, 
+        [=](Vector2 &pos) { pos.y = (int)pow(graphHeight / 2 - pos.x, 2) / (graphHeight / 4); });
+    std::for_each(begin + graphWidth * 3, begin + graphWidth * 4, 
+        [=](Vector2& pos) { pos.y = graphHeight - 1 - (int)pow(graphHeight / 2 - pos.x, 2) / (graphHeight / 4); });
 
-    for (; i < graphWidth * 3; i++)
-        positions[i].y = (int)pow(graphHeight / 2 - positions[i].x, 2) / (graphHeight / 4);
-
-    for (; i < graphWidth * 4; i++)
-        positions[i].y = graphHeight - 1 - (int)pow(graphHeight / 2 - positions[i].x, 2) / (graphHeight / 4);
-
-    //Derived variant since normal sine function ranges from 1 to -1 in height and PI intervals in length
-    for (; i < graphWidth * 5; i++)
-        positions[i].y = round((graphHeight / 2 - 1) * sin(positions[i].x / 2.0f - PI / 2.0f) + graphHeight / 2); 
-
-    for (; i < graphWidth * 6; i++)
-        positions[i].y = round(graphHeight / 2 - (graphHeight / 2 - 1) * cos(positions[i].x / 2.0f - PI));
-
-    for (; i < graphWidth * 7; i++)
-        positions[i].y = (int)(2 * PI * atan(positions[i].x));
-
-    for (; i < graphWidth * 8; i++)
-        positions[i].y = graphHeight - 1 - (int)(2 * (PI * atan(positions[i].x)));
+    std::for_each(begin + graphWidth * 4, begin + graphWidth * 5, 
+        [=](Vector2 &pos) { pos.y = (int)round((graphHeight / 2 - 1) * sin(pos.x / 2.0f - PI / 2.0f) + graphHeight / 2); });
+    std::for_each(begin + graphWidth * 5, begin + graphWidth * 6, 
+        [=](Vector2 &pos) { pos.y = (int)round(graphHeight / 2 - (graphHeight / 2 - 1) * cos(pos.x / 2.0f - PI)); });
+    std::for_each(begin + graphWidth * 6, begin + graphWidth * 7, 
+        [=](Vector2 &pos) { pos.y = (int)(2 * PI * atan(pos.x)); });
+    std::for_each(begin + graphWidth * 7, begin + graphWidth * 8, 
+        [=](Vector2 &pos) { pos.y = graphHeight - 1 - (int)(2 * (PI * atan(pos.x))); });
 }
