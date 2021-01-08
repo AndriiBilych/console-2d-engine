@@ -1,3 +1,8 @@
 . Add "written in c++17 standard" to readme
 . Add printing text to console with different arguments
 . Add drawing sprites
+. Stretch sprites if text is needed in an app
+
+Project ideas
+. Chess
+. The game of life

@@ -7,7 +7,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graphs", "Graphs\Console visualizer.vcxproj", "{6E1FCB09-0750-48EC-8897-6A3569B3B319}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Movie Matrix", "Movie Matrix\Movie Matrix.vcxproj", "{CFD51225-B358-4A46-AEC1-594EC6B53657}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Matrix", "Movie Matrix\Movie Matrix.vcxproj", "{CFD51225-B358-4A46-AEC1-594EC6B53657}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chess", "Chess\Chess.vcxproj", "{730ABBD9-88A7-4402-855B-DED1A8A6D67C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,14 @@ Global
 		{CFD51225-B358-4A46-AEC1-594EC6B53657}.Release|x64.Build.0 = Release|x64
 		{CFD51225-B358-4A46-AEC1-594EC6B53657}.Release|x86.ActiveCfg = Release|Win32
 		{CFD51225-B358-4A46-AEC1-594EC6B53657}.Release|x86.Build.0 = Release|Win32
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Debug|x64.ActiveCfg = Debug|x64
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Debug|x64.Build.0 = Debug|x64
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Debug|x86.ActiveCfg = Debug|Win32
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Debug|x86.Build.0 = Debug|Win32
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Release|x64.ActiveCfg = Release|x64
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Release|x64.Build.0 = Release|x64
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Release|x86.ActiveCfg = Release|Win32
+		{730ABBD9-88A7-4402-855B-DED1A8A6D67C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -46,11 +46,16 @@ public:
 	{
 		m_deltaTime = .0f; //Time between screen refreshes
 		m_isRunning = true;
+		m_bConsoleInFocus = true;
 		m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		m_hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
 
 		//Initialise variables for screen buffer
 		m_screenWidth = width;
 		m_screenHeight = height;
+
+		m_mousePosX = 0;
+		m_mousePosY = 0;
 
 		//Initialise variables for font
 		m_cfi.cbSize = sizeof(m_cfi);
@@ -66,6 +71,9 @@ public:
 		m_rect = { 0, 0, (short)m_screenWidth - 1, (short)m_screenHeight - 1 };
 		SetConsoleWindowInfo(m_hConsole, TRUE, &m_rect);
 
+		// Set flags to allow mouse input		
+		SetConsoleMode(m_hConsoleIn, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
+			
 		//Allocate and assign memory for the screen Buffer
 		m_screen = new CHAR_INFO[m_screenWidth * m_screenHeight + 1];
 		std::memset(m_screen, 0, sizeof(CHAR_INFO) * m_screenWidth * m_screenHeight);
@@ -146,6 +154,77 @@ protected:
 				m_keyOldState[i] = m_keyNewState[i];
 			}
 
+			// Handle Mouse Input - Check for window events
+			INPUT_RECORD inBuf[32];
+			DWORD events = 0;
+			GetNumberOfConsoleInputEvents(m_hConsoleIn, &events);
+			if (events > 0)
+				ReadConsoleInput(m_hConsoleIn, inBuf, events, &events);
+
+			// Handle events
+			for (DWORD i = 0; i < events; i++)
+			{
+				switch (inBuf[i].EventType)
+				{
+				case FOCUS_EVENT:
+				{
+					m_bConsoleInFocus = inBuf[i].Event.FocusEvent.bSetFocus;
+				}
+				break;
+
+				case MOUSE_EVENT:
+				{
+					switch (inBuf[i].Event.MouseEvent.dwEventFlags)
+					{
+					case MOUSE_MOVED:
+					{
+						m_mousePosX = inBuf[i].Event.MouseEvent.dwMousePosition.X;
+						m_mousePosY = inBuf[i].Event.MouseEvent.dwMousePosition.Y;
+					}
+					break;
+
+					case 0:
+					{
+						for (int m = 0; m < 5; m++)
+							m_mouseNewState[m] = (inBuf[i].Event.MouseEvent.dwButtonState & (1 << m)) > 0;
+
+					}
+					break;
+
+					default:
+						break;
+					}
+				}
+				break;
+
+				default:
+					break;
+					// We don't care just at the moment
+				}
+			}
+
+			for (int m = 0; m < 5; m++)
+			{
+				m_mouse[m].pressed = false;
+				m_mouse[m].released = false;
+
+				if (m_mouseNewState[m] != m_mouseOldState[m])
+				{
+					if (m_mouseNewState[m])
+					{
+						m_mouse[m].pressed = true;
+						m_mouse[m].held = true;
+					}
+					else
+					{
+						m_mouse[m].released = true;
+						m_mouse[m].held = false;
+					}
+				}
+
+				m_mouseOldState[m] = m_mouseNewState[m];
+			}
+
 			//Add stats
 			//swprintf(&m_screen[(m_screenHeight - 1) * m_screenWidth], 50, L"deltaTime: %.5fs FPS: %5.0f", deltaTime, 1.0f / deltaTime);
 
@@ -167,27 +246,37 @@ private:
 	int m_screenHeight;
 	CHAR_INFO* m_screen;
 	HANDLE m_hConsole;
+	HANDLE m_hConsoleIn;
 	SMALL_RECT m_rect;
 	CONSOLE_FONT_INFOEX m_cfi;
 	COORD m_bufferSize;
 	COORD m_bufferPosition;
 	bool m_isRunning;
+	bool m_bConsoleInFocus;
 	float m_deltaTime;
 	short m_keyOldState[256] = { 0 };
 	short m_keyNewState[256] = { 0 };
+	bool m_mouseOldState[5] = { 0 };
+	bool m_mouseNewState[5] = { 0 };
 	struct keyState
 	{
 		bool pressed;
 		bool released;
 		bool held;
-	} m_keys[256];
+	} m_keys[256], m_mouse[5];
+	int m_mousePosX;
+	int m_mousePosY;
 public:
 	int GetScreenWidth() { return m_screenWidth; }
 	int GetScreenHeight() { return m_screenHeight; }
+	CHAR_INFO GetChar(int x, int y) { return m_screen[y * m_screenWidth + x]; }
 	keyState GetKey(unsigned short n) { 
 		if (n < 256)
 			return m_keys[n];
 		else
 			throw "Accessing illegal keyState";
 	}
+	int GetMouseX() { return m_mousePosX; }
+	int GetMouseY() { return m_mousePosY; }
+	keyState GetMouse(int nMouseButtonID) { return m_mouse[nMouseButtonID]; }
 };

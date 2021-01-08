@@ -17,14 +17,14 @@ Compiling & Running
 ---------
 The project was built with MSVC and Visual Studio 2019
 
-Graphs
----------
-First project features 8 trigonometric functions and a pointers moving on the graph coordinates.
-
-![Not Loaded](https://media.giphy.com/media/K5HnGAKasGZGSGjuSq/giphy.gif)
-
 MovieMatrix
 ---------
 A console representation of the matrix inspired by the movie.
 
 ![Not Loaded](https://media.giphy.com/media/UbZUJMRA4j7v4WYj2K/giphy.gif)
+
+Graphs
+---------
+First project features 8 trigonometric functions and a pointers moving on the graph coordinates.
+
+![Not Loaded](https://media.giphy.com/media/K5HnGAKasGZGSGjuSq/giphy.gif)
