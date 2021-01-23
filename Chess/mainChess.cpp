@@ -1,12 +1,13 @@
 /*Todo:
-* Optimise code for playing as black
-* Simplify code ( 
+* Simplify code (
+	all_of - none_of - any_of,
+	stl algorithms,
 	IsPositionAttacked() - LookForChecks() - IsInCheck() - IsCheckmate(),
 	SetPossibleMovementsVector(),
 	Update(),
 	emplace_back(),
 	new operator invocations,
-	const references and functions,
+	const references and const functions,
 	merge command(
 		capture&move(remove duplicating move command from capture command), 
 		pawn double move, 
@@ -16,8 +17,6 @@
 * game recording
 * Restart
 * AI
-* stepping through completed game(undoing untaken enPassant problem) (maybe?)
-* Choose promotion figure problem(threads?) (maybe?)
 * Checkout chess github repositories
 * captured score difference
 * features list in readme
