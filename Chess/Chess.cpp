@@ -4,8 +4,12 @@
 Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     : Engine(width, height, fontWidth, fontHeight)
 {
-    playAsWhite = true;
-    turn = true;
+    srand(time(NULL));
+    randomTeam = false;
+    // set randomTeam to false and change second bool value in ternary to specify team
+    playerColor = randomTeam ? rand() % 2 : false; 
+    currentTurn = true;
+    playWithComputer = true;
     checkerboardOriginX = 1;
     checkerboardOriginY = 0;
     highlightedX = -1;
@@ -14,29 +18,29 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
 
     //Assign symbols and coordinates to pieces
     for (int i = 0; i < 8; i++) { //Pawns
-        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playAsWhite ? 6 : 1), pawn, true));
-        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playAsWhite ? 1 : 6), pawn, false));
+        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 6 : 1), pawn, true));
+        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 1 : 6), pawn, false));
     }
     
     //White figures
-    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playAsWhite ? 7 : 0), rook, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playAsWhite ? 7 : 0), knight, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playAsWhite ? 7 : 0), bishop, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playAsWhite ? 3 : 4), checkerboardOriginY + (playAsWhite ? 7 : 0), queen, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playAsWhite ? 4 : 3), checkerboardOriginY + (playAsWhite ? 7 : 0), king, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playAsWhite ? 7 : 0), bishop, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playAsWhite ? 7 : 0), knight, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playAsWhite ? 7 : 0), rook, true));
+    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 7 : 0), rook, true));
+    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 7 : 0), knight, true));
+    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 7 : 0), bishop, true));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 7 : 0), queen, true));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 7 : 0), king, true));
+    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 7 : 0), bishop, true));
+    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 7 : 0), knight, true));
+    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 7 : 0), rook, true));
     
     //Black figures
-    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playAsWhite ? 0 : 7), rook, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playAsWhite ? 0 : 7), knight, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playAsWhite ? 0 : 7), bishop, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playAsWhite ? 3 : 4), checkerboardOriginY + (playAsWhite ? 0 : 7), queen, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playAsWhite ? 4 : 3), checkerboardOriginY + (playAsWhite ? 0 : 7), king, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playAsWhite ? 0 : 7), bishop, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playAsWhite ? 0 : 7), knight, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playAsWhite ? 0 : 7), rook, false));
+    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 0 : 7), rook, false));
+    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 0 : 7), knight, false));
+    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 0 : 7), queen, false));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 0 : 7), king, false));
+    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false));
+    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 0 : 7), knight, false));
+    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false));
 }
 
 bool Chess::Start()
@@ -77,8 +81,8 @@ bool Chess::Update(float deltaTime)
     //Game logic
     /*these brackets are necessary to prevent identifying "else AIMove()" 
     as an else statement to "if (!IsCheckmate(turn) && GetMouse(0).pressed)" clause*/
-    if (turn == playAsWhite) { 
-        if (!IsCheckmate(turn) && GetMouse(0).pressed) {
+    if (currentTurn == playerColor || !playWithComputer) { 
+        if (!IsCheckmate(currentTurn) && GetMouse(0).pressed) {
             auto mouseX = GetMouseX();
             auto mouseY = GetMouseY();
 
@@ -96,7 +100,7 @@ bool Chess::Update(float deltaTime)
                         auto clickedPiece = GetPieceByCoordinate(clickedPos);
 
                         /*if the highlighted square is not empty && if the correct piece is choosen on this turn*/
-                        if (turn == highlightedPiece->isWhite) {
+                        if (currentTurn == highlightedPiece->isWhite) {
 
                             //Move only to possible movements-------------------------------------this needs to be a function for ai
                             if (IsMovePossible(clickedPos)) {
@@ -122,14 +126,14 @@ bool Chess::Update(float deltaTime)
 
                                 auto promotionCondition = clickedPiece == nullptr
                                     && highlightedPiece->symbol == pawn
-                                    && (highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY
-                                        || !highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY + 7);
+                                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
+                                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                                 auto promotionCaptureCondition = clickedPiece != nullptr
                                     && highlightedPiece->symbol == pawn
                                     && clickedPiece->isWhite != highlightedPiece->isWhite
-                                    && (highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY
-                                        || !highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY + 7);
+                                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
+                                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                                 //Choose an appropriate move based on conditions and invoke a corresponding command
                                 //En passant and promotion capture should be checked before the capture
@@ -137,7 +141,7 @@ bool Chess::Update(float deltaTime)
                                     lastCommand = new EnPassantCaptureCommand(
                                         highlightedPiece,
                                         enPassantPiece,
-                                        enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playAsWhite ? 1 : -1),
+                                        enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playerColor ? 1 : -1),
                                         highlightedPos);
                                 else if (promotionCaptureCondition) {
                                     lastCommand = new PromotionCaptureCommand(
@@ -177,13 +181,13 @@ bool Chess::Update(float deltaTime)
                             
                                 lastCommand->execute();
                         
-                                if (IsInCheck(turn))
+                                if (IsInCheck(currentTurn))
                                     lastCommand->undo();
                                 else {
                                     if (highlightedPiece->isFirstMove) 
                                         highlightedPiece->isFirstMove = false;
                                 
-                                    turn = !turn;
+                                    currentTurn = !currentTurn;
                                 }
                             }
                         }
@@ -197,7 +201,7 @@ bool Chess::Update(float deltaTime)
                 else {
                     auto clicked = GetPieceByCoordinate(mouseX, mouseY);
                 
-                    if (clicked != nullptr && clicked->isWhite == playAsWhite)
+                    if (clicked != nullptr && (clicked->isWhite == playerColor || !playWithComputer))
                         SetPossibleMovementsVector(*clicked, possibleMovements);
 
                     highlightedX = mouseX;
@@ -213,7 +217,7 @@ bool Chess::Update(float deltaTime)
         }
     }
     else
-        AIMove(!playAsWhite);
+        AIMove(!playerColor);
 
     return true;
 }
@@ -222,7 +226,7 @@ void Chess::DisplayChess() {
     //Draw board
     for (int y = 0; y < 8; y++) {
         //Draw numbers
-        Draw(checkerboardOriginX - 1, checkerboardOriginY + y, std::to_string(playAsWhite ? 8 - y : y + 1)[0], 0xF); 
+        Draw(checkerboardOriginX - 1, checkerboardOriginY + y, std::to_string(playerColor ? 8 - y : y + 1)[0], 0xF); 
         //Draw checkerboard
         for (int x = 0; x < 8; x++) 
             if (y % 2 != 0 && x % 2 != 0 || y % 2 == 0 && x % 2 == 0)
@@ -233,17 +237,17 @@ void Chess::DisplayChess() {
 
     //Draw letters
     for (int x = 0; x < 8; x++) 
-        Draw(checkerboardOriginX + x, checkerboardOriginY + 8, playAsWhite ? 97 + x : 97 + 8 - (x + 1), 0xF);
+        Draw(checkerboardOriginX + x, checkerboardOriginY + 8, playerColor ? 97 + x : 97 + 8 - (x + 1), 0xF);
 
     //Draw who's turn message
-    if (!IsCheckmate(turn)) {
+    if (!IsCheckmate(currentTurn)) {
         DrawTextToBuffer(0, 10, "Turn: ");
-        Draw(6, 10, turn ? 'W' : 'B', turn ? 0x8F : 0x70);
+        Draw(6, 10, currentTurn ? 'W' : 'B', currentTurn ? 0x8F : 0x70);
     }
     else
     {
         Draw(6, 10, ' ', 0x0);
-        DrawTextToBuffer(0, 10, !turn ? "White" : "Black");
+        DrawTextToBuffer(0, 10, !currentTurn ? "White" : "Black");
         DrawTextToBuffer(6, 10, "Won");
     }
 
@@ -277,13 +281,14 @@ void Chess::DisplayChess() {
 
 void Chess::DisableEnPassants() {
     for (auto& p : pieces) 
-        if (p.isWhite == turn && p.isEnPassantAvailable)
+        if (p.isWhite == currentTurn && p.isEnPassantAvailable)
             p.isEnPassantAvailable = false;
 }
 
 void Chess::AIMove(bool team) {
     bool isMoveLegal = false;
     std::vector<Piece> availablePieces(16);
+    srand(time(NULL));
 
     if (!IsCheckmate(team))
         while (!isMoveLegal) {
@@ -331,14 +336,14 @@ void Chess::AIMove(bool team) {
 
                 auto promotionCondition = clickedPiece == nullptr
                     && highlightedPiece->symbol == pawn
-                    && (highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY
-                        || !highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY + 7);
+                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
+                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                 auto promotionCaptureCondition = clickedPiece != nullptr
                     && highlightedPiece->symbol == pawn
                     && clickedPiece->isWhite != highlightedPiece->isWhite
-                    && (highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY
-                        || !highlightedPiece->isWhite == playAsWhite && clickedPos.y == checkerboardOriginY + 7);
+                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
+                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                 //Choose an appropriate move based on conditions and invoke a corresponding command
                 //En passant and promotion capture should be checked before the capture
@@ -346,7 +351,7 @@ void Chess::AIMove(bool team) {
                     lastCommand = new EnPassantCaptureCommand(
                         highlightedPiece,
                         enPassantPiece,
-                        enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playAsWhite ? 1 : -1),
+                        enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playerColor ? 1 : -1),
                         highlightedPos);
                 else if (promotionCaptureCondition) {
                     lastCommand = new PromotionCaptureCommand(
@@ -386,13 +391,13 @@ void Chess::AIMove(bool team) {
 
                 lastCommand->execute();
 
-                if (IsInCheck(turn)) 
+                if (IsInCheck(currentTurn)) 
                     lastCommand->undo();
                 else {
                     if (highlightedPiece->isFirstMove)
                         highlightedPiece->isFirstMove = false;
 
-                    turn = !turn;
+                    currentTurn = !currentTurn;
                     isMoveLegal = true;
                 }
             }
@@ -415,7 +420,7 @@ bool Chess::IsPositionAttacked(Position pos, bool team) {
             case pawn:
             {
                 auto move = p.pos;
-                team == playAsWhite ? move.y -= 1 : move.y += 1;
+                team == playerColor ? move.y -= 1 : move.y += 1;
 
                 if ((move.x - 1 == pos.x || move.x + 1 == pos.x) && move.y == pos.y)
                     return true;
@@ -550,7 +555,7 @@ bool Chess::LookForChecks(Piece clickedPiece) {
     case pawn:
     {
         auto pos = clickedPiece.pos;
-        clickedPiece.isWhite == playAsWhite ? pos.y -= 1 : pos.y += 1;
+        clickedPiece.isWhite == playerColor ? pos.y -= 1 : pos.y += 1;
 
         //Captures
         auto leftPiece = GetPieceByCoordinate(pos.x - 1, pos.y);
@@ -622,39 +627,39 @@ bool Chess::CanCheckBeBlocked(Piece checkingPiece, bool team) {
             //checkingPiece above the king
             if (kingPiece->pos.y > checkingPiece.pos.y) 
                 for (int i = kingPiece->pos.y - 1; i > checkingPiece.pos.y; i--)
-                    possibleBlocks.push_back(Position(kingPiece->pos.x, i));
+                    possibleBlocks.emplace_back(Position(kingPiece->pos.x, i));
             //checkingPiece under the king
             else 
                 for (int i = kingPiece->pos.y + 1; i < checkingPiece.pos.y; i++)
-                    possibleBlocks.push_back(Position(kingPiece->pos.x, i));
+                    possibleBlocks.emplace_back(Position(kingPiece->pos.x, i));
         //horizontal check
         else if (kingPiece->pos.y == checkingPiece.pos.y) 
             //checkingPiece left from the king
             if (kingPiece->pos.x > checkingPiece.pos.x) 
                 for (int i = kingPiece->pos.x - 1; i > checkingPiece.pos.x; i--)
-                    possibleBlocks.push_back(Position(i, kingPiece->pos.y));
+                    possibleBlocks.emplace_back(Position(i, kingPiece->pos.y));
             //checkingPiece right from the king
             else 
                 for (int i = kingPiece->pos.x + 1; i < checkingPiece.pos.x; i++)
-                    possibleBlocks.push_back(Position(i, kingPiece->pos.y));
+                    possibleBlocks.emplace_back(Position(i, kingPiece->pos.y));
         //diagonal check
         else {
             //top right
             if (kingPiece->pos.y > checkingPiece.pos.y && kingPiece->pos.x < checkingPiece.pos.x)
                 for (Position i = kingPiece->pos + Position(1, -1); i.x < checkingPiece.pos.x; i.x++, i.y-- )
-                    possibleBlocks.push_back(i);
+                    possibleBlocks.emplace_back(i);
             //top left
             else if (kingPiece->pos.y > checkingPiece.pos.y && kingPiece->pos.x > checkingPiece.pos.x)
                 for (Position i = kingPiece->pos + Position(-1, -1); i.x > checkingPiece.pos.x; i.x--, i.y--)
-                    possibleBlocks.push_back(i);
+                    possibleBlocks.emplace_back(i);
             //down left
             else if (kingPiece->pos.y < checkingPiece.pos.y && kingPiece->pos.x > checkingPiece.pos.x)
                 for (Position i = kingPiece->pos + Position(-1, 1); i.x > checkingPiece.pos.x; i.x--, i.y++)
-                    possibleBlocks.push_back(i);
+                    possibleBlocks.emplace_back(i);
             //down right
             else 
                 for (Position i = kingPiece->pos + Position(1, 1); i.x < checkingPiece.pos.x; i.x++, i.y++)
-                    possibleBlocks.push_back(i);
+                    possibleBlocks.emplace_back(i);
         }
     }
 
@@ -685,36 +690,37 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
     {
     case pawn:
     {
-        auto yOffset = clickedPiece.isWhite == playAsWhite ? -1 : 1;
+        auto yOffset = clickedPiece.isWhite == playerColor ? -1 : 1;
         auto piecePos = clickedPiece.pos + Position(0, yOffset);
         
         //Basic movement
         if (GetPieceByCoordinate(piecePos) == nullptr)
-            possibleMovements.push_back(piecePos);
+            possibleMovements.emplace_back(piecePos);
         
         //Captures
         auto leftPiece = GetPieceByCoordinate(piecePos + Position(-1, 0));
         auto rightPiece = GetPieceByCoordinate(piecePos + Position(1, 0));
         if (leftPiece != nullptr && leftPiece->isWhite != clickedPiece.isWhite) 
-            possibleMovements.push_back(leftPiece->pos);
+            possibleMovements.emplace_back(leftPiece->pos);
         if (rightPiece != nullptr && rightPiece->isWhite != clickedPiece.isWhite) 
-            possibleMovements.push_back(rightPiece->pos);
+            possibleMovements.emplace_back(rightPiece->pos);
 
         //En Passant
         leftPiece = GetPieceByCoordinate(clickedPiece.pos + Position(-1, 0));
         rightPiece = GetPieceByCoordinate(clickedPiece.pos + Position(1, 0));
         if (leftPiece != nullptr && leftPiece->isWhite != clickedPiece.isWhite && leftPiece->isEnPassantAvailable) {
-            possibleMovements.push_back(leftPiece->pos);
-            possibleMovements.push_back(clickedPiece.pos + Position(-1, yOffset));
+            possibleMovements.emplace_back(leftPiece->pos);
+            possibleMovements.emplace_back(clickedPiece.pos + Position(-1, yOffset));
         }
         if (rightPiece != nullptr && rightPiece->isWhite != clickedPiece.isWhite && rightPiece->isEnPassantAvailable) {
-            possibleMovements.push_back(rightPiece->pos);
-            possibleMovements.push_back(clickedPiece.pos + Position(1, yOffset));
+            possibleMovements.emplace_back(rightPiece->pos);
+            possibleMovements.emplace_back(clickedPiece.pos + Position(1, yOffset));
         }
 
         //First move
-        if (clickedPiece.isFirstMove && GetPieceByCoordinate(piecePos + Position(0, yOffset)) == nullptr) {
-            possibleMovements.push_back(piecePos + Position(0, yOffset));
+        if (clickedPiece.isFirstMove && GetPieceByCoordinate(piecePos + Position(0, yOffset)) == nullptr
+            && GetPieceByCoordinate(piecePos) == nullptr) {
+            possibleMovements.emplace_back(piecePos + Position(0, yOffset));
         }
         break;
     }
@@ -730,7 +736,7 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
             auto piece = GetPieceByCoordinate(pos);
             if (IsWithinBoard(pos) && piece == nullptr || 
                 piece != nullptr && piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
         }
         break;
     case queen:
@@ -744,8 +750,8 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
                 auto piece = GetPieceByCoordinate(pos);
                 if (piece == nullptr ||
                     piece != nullptr && piece->isWhite != clickedPiece.isWhite) {
-                    if (!IsPositionAttacked(pos, !turn))
-                        possibleMovements.push_back(pos);
+                    if (!IsPositionAttacked(pos, !currentTurn))
+                        possibleMovements.emplace_back(pos);
                 }
             }
         }
@@ -766,7 +772,7 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
                     {
                         if (!IsPositionAttacked(clickedPiece.pos + Position(-1, 0), !clickedPiece.isWhite) 
                             && !IsPositionAttacked(clickedPiece.pos + Position(-2, 0), !clickedPiece.isWhite))
-                        possibleMovements.push_back(clickedPiece.pos + Position(-2, 0));
+                        possibleMovements.emplace_back(clickedPiece.pos + Position(-2, 0));
                     }
                     else
                     {
@@ -786,7 +792,7 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
                     {
                         if (!IsPositionAttacked(clickedPiece.pos + Position(1, 0), !clickedPiece.isWhite)
                             && !IsPositionAttacked(clickedPiece.pos + Position(2, 0), !clickedPiece.isWhite))
-                        possibleMovements.push_back(clickedPiece.pos + Position(2, 0));
+                        possibleMovements.emplace_back(clickedPiece.pos + Position(2, 0));
                     }
                     else
                     {
@@ -807,10 +813,10 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
     for (auto pos = clickedPiece.pos + Position(0, -1); IsWithinBoard(pos); pos.y--) {
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }
@@ -818,10 +824,10 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
     for (auto pos = clickedPiece.pos + Position(1, 0); IsWithinBoard(pos); pos.x++){
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }
@@ -829,10 +835,10 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
     for (auto pos = clickedPiece.pos + Position(0, 1); IsWithinBoard(pos); pos.y++) {
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }
@@ -840,10 +846,10 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
     for (auto pos = clickedPiece.pos + Position(-1, 0); IsWithinBoard(pos); pos.x--) {
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }
@@ -854,10 +860,10 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
     for (auto pos = clickedPiece.pos + Position(-1, -1); IsWithinBoard(pos); pos.x--, pos.y--) {
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }
@@ -865,10 +871,10 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
     for (auto pos = clickedPiece.pos + Position(1, -1); IsWithinBoard(pos); pos.x++, pos.y--) {
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }
@@ -876,10 +882,10 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
     for (auto pos = clickedPiece.pos + Position(1, 1); IsWithinBoard(pos); pos.x++, pos.y++) {
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }
@@ -887,10 +893,10 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
     for (auto pos = clickedPiece.pos + Position(-1, 1); IsWithinBoard(pos); pos.x--, pos.y++) {
         auto piece = GetPieceByCoordinate(pos);
         if (piece == nullptr)
-            possibleMovements.push_back(pos);
+            possibleMovements.emplace_back(pos);
         else {
             if (piece->isWhite != clickedPiece.isWhite)
-                possibleMovements.push_back(pos);
+                possibleMovements.emplace_back(pos);
             break;
         }
     }

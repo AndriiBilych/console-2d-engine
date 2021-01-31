@@ -3,14 +3,11 @@
 	all_of - none_of - any_of,
 	stl algorithms,
 	IsPositionAttacked() - LookForChecks() - IsInCheck() - IsCheckmate(),
-	SetPossibleMovementsVector(),
-	Update(),
-	emplace_back(),
 	new operator invocations,
 	const references and const functions,
 	if (condition) return bool; => return condition,
 	makeMove function,
-	possibleMovements dependency bullshit IsMovePossible(),
+	possibleMovements dependency bullshit in IsMovePossible(),
 	merge command(
 		capture&move(remove duplicating move command from capture command), 
 		pawn double move, 
@@ -24,9 +21,11 @@
 * stepping through the game after completion
 * status of the game update in the title of the window
 * 
-* Bugs: 
-* enpassant is available through a piece like a horse
-* 
+* Bugs-----------------------------------------------------------------------
+* When playing with a computer if after player move the figure of opposite color was selected
+the hilighting and possible moves are displayed incorrectly
+* When playing against another player possible moves are displayed if the opposite color piece is selected 
+even if it's the other team's turn
 * Extras----------------------------------------------------------------------
 * 
 * Checkout chess github repositories
@@ -34,6 +33,7 @@
 * alpha-beta prunning
 * Piece-Square table
 * machine learning
+* menu(for boolean values)
 */
 #include "Chess.h"
 

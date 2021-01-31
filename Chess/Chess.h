@@ -1,5 +1,3 @@
-/*Chess
-*/
 #pragma once
 #include <vector>
 #include <algorithm>
@@ -34,8 +32,10 @@ public:
     void SetBishopMovementVector(Piece, std::vector<Position>&);
     ~Chess();
 private:
-    bool playAsWhite;
-    bool turn;
+    bool randomTeam;
+    bool playerColor;
+    bool currentTurn;
+    bool playWithComputer;
     int checkerboardOriginX;
     int checkerboardOriginY;
     signed short highlightedX;
