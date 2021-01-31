@@ -16,6 +16,7 @@ public:
     void DisplayChess();
     void DisableEnPassants();
     bool IsWithinBoard(Position);
+    void AIMove(bool);
     bool IsPositionAttacked(Position, bool);
     bool IsPositionAttackedByRook(Piece, Position);
     bool IsPositionAttackedByBishop(Piece, Position);

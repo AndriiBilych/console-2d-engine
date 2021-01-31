@@ -20,6 +20,14 @@ public:
 
 class Piece {
 public:
+    Piece() : pos(0, 0) {
+        symbol = pawn;
+        this->isWhite = isWhite;
+        isFirstMove = true;
+        isTaken = false;
+        isEnPassantAvailable = false;
+    }
+
     Piece(signed short x, signed short y, Characters c, bool isWhite) : pos(x, y) {
         symbol = c;
         this->isWhite = isWhite;
