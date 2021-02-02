@@ -36,6 +36,7 @@ private:
     bool playerColor;
     bool currentTurn;
     bool playWithComputer;
+    bool isGameOver;
     int checkerboardOriginX;
     int checkerboardOriginY;
     signed short highlightedX;

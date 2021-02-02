@@ -5,16 +5,21 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     : Engine(width, height, fontWidth, fontHeight)
 {
     srand(time(NULL));
-    randomTeam = false;
+    
+    //These booleans can be changed - game setting
+    randomTeam = true;
     // set randomTeam to false and change second bool value in ternary to specify team
     playerColor = randomTeam ? rand() % 2 : false; 
-    currentTurn = true;
     playWithComputer = true;
+
     checkerboardOriginX = 1;
     checkerboardOriginY = 0;
     highlightedX = -1;
     highlightedY = -1;
     pieces.reserve(32);
+    //These bools can't be changed - game tracking
+    currentTurn = true;
+    isGameOver = false;
 
     //Assign symbols and coordinates to pieces
     for (int i = 0; i < 8; i++) { //Pawns
@@ -43,10 +48,7 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false));
 }
 
-bool Chess::Start()
-{
-    return true;
-}
+bool Chess::Start() { return true; }
 
 bool Chess::Update(float deltaTime)
 {
@@ -81,143 +83,155 @@ bool Chess::Update(float deltaTime)
     //Game logic
     /*these brackets are necessary to prevent identifying "else AIMove()" 
     as an else statement to "if (!IsCheckmate(turn) && GetMouse(0).pressed)" clause*/
-    if (currentTurn == playerColor || !playWithComputer) { 
-        if (!IsCheckmate(currentTurn) && GetMouse(0).pressed) {
-            auto mouseX = GetMouseX();
-            auto mouseY = GetMouseY();
+    if (!isGameOver) {
+        if (currentTurn == playerColor || !playWithComputer) { 
+            if (!isGameOver && GetMouse(0).pressed) {
+                auto mouseX = GetMouseX();
+                auto mouseY = GetMouseY();
 
-            // if clicked within the board
-            if (IsWithinBoard(Position(mouseX, mouseY))) { 
+                // if clicked within the board
+                if (IsWithinBoard(Position(mouseX, mouseY))) { 
 
-                // if there is already a highlighted square
-                if (highlightedX != -1 && highlightedY != -1) {
-                    auto highlightedPos = Position(highlightedX, highlightedY);
-                    auto highlightedPiece = GetPieceByCoordinate(highlightedPos);
+                    // if there is already a highlighted square
+                    if (highlightedX != -1 && highlightedY != -1) {
+                        auto highlightedPos = Position(highlightedX, highlightedY);
+                        auto highlightedPiece = GetPieceByCoordinate(highlightedPos);
                 
-                    if (highlightedPiece != nullptr)
-                    {
-                        auto clickedPos = Position(mouseX, mouseY);
-                        auto clickedPiece = GetPieceByCoordinate(clickedPos);
+                        if (highlightedPiece != nullptr)
+                        {
+                            auto clickedPos = Position(mouseX, mouseY);
+                            auto clickedPiece = GetPieceByCoordinate(clickedPos);
 
-                        /*if the highlighted square is not empty && if the correct piece is choosen on this turn*/
-                        if (currentTurn == highlightedPiece->isWhite) {
+                            /*if the highlighted square is not empty && if the correct piece is choosen on this turn*/
+                            if (currentTurn == highlightedPiece->isWhite) {
 
-                            //Move only to possible movements-------------------------------------this needs to be a function for ai
-                            if (IsMovePossible(clickedPos)) {
+                                //Move only to possible movements-------------------------------------this needs to be a function for ai
+                                if (IsMovePossible(clickedPos)) {
 
-                                //Calculate conditions for special moves like castling, pawn double move, en passant, promotions
-                                auto captureCondition = clickedPiece != nullptr
-                                    && clickedPiece->isWhite != highlightedPiece->isWhite;
+                                    //Calculate conditions for special moves like castling, pawn double move, en passant, promotions
+                                    auto captureCondition = clickedPiece != nullptr
+                                        && clickedPiece->isWhite != highlightedPiece->isWhite;
 
-                                auto castleCondition = clickedPiece == nullptr
-                                    && highlightedPiece->symbol == king
-                                    && (clickedPos == highlightedPos + Position(2, 0)
-                                        || clickedPos == highlightedPos + Position(-2, 0));
+                                    auto castleCondition = clickedPiece == nullptr
+                                        && highlightedPiece->symbol == king
+                                        && (clickedPos == highlightedPos + Position(2, 0)
+                                            || clickedPos == highlightedPos + Position(-2, 0));
 
-                                auto pawnDoubleMoveCondition = clickedPiece == nullptr
-                                    && highlightedPiece->symbol == pawn
-                                    && abs(clickedPos.y - highlightedPos.y) == 2;
+                                    auto pawnDoubleMoveCondition = clickedPiece == nullptr
+                                        && highlightedPiece->symbol == pawn
+                                        && abs(clickedPos.y - highlightedPos.y) == 2;
 
-                                auto enPassantClickedSide = clickedPos.x - highlightedPos.x > 0; // true - right side, false - left side
-                                auto enPassantPiece = GetPieceByCoordinate(highlightedPos + Position(enPassantClickedSide ? 1 : -1, 0));
-                                auto enPassantCaptureCondition = enPassantPiece != nullptr
-                                    && enPassantPiece->isWhite != highlightedPiece->isWhite
-                                    && enPassantPiece->isEnPassantAvailable;
+                                    auto enPassantClickedSide = clickedPos.x - highlightedPos.x > 0; // true - right side, false - left side
+                                    auto enPassantPiece = GetPieceByCoordinate(highlightedPos + Position(enPassantClickedSide ? 1 : -1, 0));
+                                    auto enPassantCaptureCondition = enPassantPiece != nullptr
+                                        && enPassantPiece->isWhite != highlightedPiece->isWhite
+                                        && enPassantPiece->isEnPassantAvailable;
 
-                                auto promotionCondition = clickedPiece == nullptr
-                                    && highlightedPiece->symbol == pawn
-                                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
-                                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
+                                    auto promotionCondition = clickedPiece == nullptr
+                                        && highlightedPiece->symbol == pawn
+                                        && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
+                                            || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
-                                auto promotionCaptureCondition = clickedPiece != nullptr
-                                    && highlightedPiece->symbol == pawn
-                                    && clickedPiece->isWhite != highlightedPiece->isWhite
-                                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
-                                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
+                                    auto promotionCaptureCondition = clickedPiece != nullptr
+                                        && highlightedPiece->symbol == pawn
+                                        && clickedPiece->isWhite != highlightedPiece->isWhite
+                                        && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
+                                            || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
-                                //Choose an appropriate move based on conditions and invoke a corresponding command
-                                //En passant and promotion capture should be checked before the capture
-                                if (enPassantCaptureCondition)
-                                    lastCommand = new EnPassantCaptureCommand(
-                                        highlightedPiece,
-                                        enPassantPiece,
-                                        enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playerColor ? 1 : -1),
-                                        highlightedPos);
-                                else if (promotionCaptureCondition) {
-                                    lastCommand = new PromotionCaptureCommand(
-                                        highlightedPiece,
-                                        clickedPiece, 
-                                        clickedPos, 
-                                        highlightedPos, 
-                                        queen, 
-                                        pawn);
-                                }
-                                //if choosen to castle
-                                else if (castleCondition) {
-                                    auto rook = GetPieceByCoordinate(
-                                        checkerboardOriginX + (clickedPos.x > highlightedPos.x ? 7 : 0),
-                                        highlightedPos.y);
+                                    //Choose an appropriate move based on conditions and invoke a corresponding command
+                                    //En passant and promotion capture should be checked before the capture
+                                    if (enPassantCaptureCondition) {
+                                        lastCommand = new EnPassantCaptureCommand(
+                                            highlightedPiece,
+                                            enPassantPiece,
+                                            enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playerColor ? 1 : -1),
+                                            highlightedPos);
+                                    }
+                                    else if (promotionCaptureCondition) {
+                                        lastCommand = new PromotionCaptureCommand(
+                                            highlightedPiece,
+                                            clickedPiece, 
+                                            clickedPos, 
+                                            highlightedPos, 
+                                            queen, 
+                                            pawn);
+                                    }
+                                    //if choosen to castle
+                                    else if (castleCondition) {
+                                        auto rook = GetPieceByCoordinate(
+                                            checkerboardOriginX + (clickedPos.x > highlightedPos.x ? 7 : 0),
+                                            highlightedPos.y);
 
-                                    lastCommand = new CastleCommand(
-                                        highlightedPiece,
-                                        rook,
-                                        clickedPos,
-                                        highlightedPos,
-                                        clickedPos + Position(clickedPos.x > highlightedPos.x ? -1 : 1, 0),
-                                        rook->pos);
-                                }
-                                //if choosen to move pawn two squares on the first move
-                                else if (pawnDoubleMoveCondition)
-                                    lastCommand = new PawnDoubleMoveCommand(highlightedPiece, clickedPos, highlightedPos);
-                                //en passant capture
-                                else if (captureCondition)
-                                    lastCommand = new CaptureCommand(highlightedPiece, clickedPiece, clickedPos, highlightedPos);
-                                //Promotion
-                                else if (promotionCondition)
-                                    lastCommand = new PromotionCommand(highlightedPiece, clickedPos, highlightedPos, queen, pawn);
-                                //normal movement
-                                else 
-                                    lastCommand = new MoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                                        lastCommand = new CastleCommand(
+                                            highlightedPiece,
+                                            rook,
+                                            clickedPos,
+                                            highlightedPos,
+                                            clickedPos + Position(clickedPos.x > highlightedPos.x ? -1 : 1, 0),
+                                            rook->pos);
+                                    }
+                                    //if choosen to move pawn two squares on the first move
+                                    else if (pawnDoubleMoveCondition) {
+                                        lastCommand = new PawnDoubleMoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                                    }
+                                    //en passant capture
+                                    else if (captureCondition) {
+                                        lastCommand = new CaptureCommand(highlightedPiece, clickedPiece, clickedPos, highlightedPos);
+                                    }
+                                    //Promotion
+                                    else if (promotionCondition) {
+                                        lastCommand = new PromotionCommand(highlightedPiece, clickedPos, highlightedPos, queen, pawn);
+                                    }
+                                    //normal movement
+                                    else {
+                                        lastCommand = new MoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                                    }
                             
-                                lastCommand->execute();
+                                    lastCommand->execute();
                         
-                                if (IsInCheck(currentTurn))
-                                    lastCommand->undo();
-                                else {
-                                    if (highlightedPiece->isFirstMove) 
-                                        highlightedPiece->isFirstMove = false;
+                                    if (IsInCheck(currentTurn)) {
+                                        lastCommand->undo();
+                                    }
+                                    else {
+                                        if (highlightedPiece->isFirstMove) {
+                                            highlightedPiece->isFirstMove = false;
+                                        }
                                 
-                                    currentTurn = !currentTurn;
+                                        currentTurn = !currentTurn;
+                                        isGameOver = IsCheckmate(currentTurn);
+                                    }
                                 }
                             }
                         }
-                    }
 
+                        possibleMovements.clear();
+                        highlightedX = -1;
+                        highlightedY = -1;
+                    }
+                    //if clicked on another piece
+                    else {
+                        auto clicked = GetPieceByCoordinate(mouseX, mouseY);
+                
+                        if (clicked != nullptr && (clicked->isWhite == playerColor || !playWithComputer)) {
+                            SetPossibleMovementsVector(*clicked, possibleMovements);
+                        }
+
+                        highlightedX = mouseX;
+                        highlightedY = mouseY;
+                    }
+                }
+                // if clicked outside the board
+                else { 
                     possibleMovements.clear();
                     highlightedX = -1;
                     highlightedY = -1;
                 }
-                //if clicked on another piece
-                else {
-                    auto clicked = GetPieceByCoordinate(mouseX, mouseY);
-                
-                    if (clicked != nullptr && (clicked->isWhite == playerColor || !playWithComputer))
-                        SetPossibleMovementsVector(*clicked, possibleMovements);
-
-                    highlightedX = mouseX;
-                    highlightedY = mouseY;
-                }
-            }
-            // if clicked outside the board
-            else { 
-                possibleMovements.clear();
-                highlightedX = -1;
-                highlightedY = -1;
             }
         }
+        else {
+            AIMove(!playerColor);
+        }
     }
-    else
-        AIMove(!playerColor);
 
     return true;
 }
@@ -239,17 +253,11 @@ void Chess::DisplayChess() {
     for (int x = 0; x < 8; x++) 
         Draw(checkerboardOriginX + x, checkerboardOriginY + 8, playerColor ? 97 + x : 97 + 8 - (x + 1), 0xF);
 
-    //Draw who's turn message
-    if (!IsCheckmate(currentTurn)) {
-        DrawTextToBuffer(0, 10, "Turn: ");
-        Draw(6, 10, currentTurn ? 'W' : 'B', currentTurn ? 0x8F : 0x70);
-    }
+    //Draw who's turn in title
+    if (!isGameOver)
+        ChangeTitle(currentTurn ? L"WHITE TURN" : L"BLACK TURN");
     else
-    {
-        Draw(6, 10, ' ', 0x0);
-        DrawTextToBuffer(0, 10, !currentTurn ? "White" : "Black");
-        DrawTextToBuffer(6, 10, "Won");
-    }
+        ChangeTitle(!currentTurn ? L"WHITE WON" : L"BLACK WON");
 
     //Draw pieces
     for (auto& p : pieces)
@@ -288,10 +296,11 @@ void Chess::DisableEnPassants() {
 void Chess::AIMove(bool team) {
     bool isMoveLegal = false;
     std::vector<Piece> availablePieces(16);
+    //Change random generator seed every ai move for true randomness
     srand(time(NULL));
 
-    if (!IsCheckmate(team))
-        while (!isMoveLegal) {
+    if (!isGameOver) {
+        while (!isMoveLegal && !isGameOver) {
             //get all pieces that can move
             auto it = std::copy_if(begin(pieces), end(pieces), begin(availablePieces), [this, team](Piece p) {
                 std::vector<Position> availablePositions;
@@ -347,12 +356,13 @@ void Chess::AIMove(bool team) {
 
                 //Choose an appropriate move based on conditions and invoke a corresponding command
                 //En passant and promotion capture should be checked before the capture
-                if (enPassantCaptureCondition)
+                if (enPassantCaptureCondition) {
                     lastCommand = new EnPassantCaptureCommand(
                         highlightedPiece,
                         enPassantPiece,
                         enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playerColor ? 1 : -1),
                         highlightedPos);
+                }
                 else if (promotionCaptureCondition) {
                     lastCommand = new PromotionCaptureCommand(
                         highlightedPiece,
@@ -377,31 +387,38 @@ void Chess::AIMove(bool team) {
                         rook->pos);
                 }
                 //if choosen to move pawn two squares on the first move
-                else if (pawnDoubleMoveCondition)
+                else if (pawnDoubleMoveCondition) {
                     lastCommand = new PawnDoubleMoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                }
                 //en passant capture
-                else if (captureCondition)
+                else if (captureCondition) {
                     lastCommand = new CaptureCommand(highlightedPiece, clickedPiece, clickedPos, highlightedPos);
+                }
                 //Promotion
-                else if (promotionCondition)
+                else if (promotionCondition) {
                     lastCommand = new PromotionCommand(highlightedPiece, clickedPos, highlightedPos, queen, pawn);
+                }
                 //normal movement
-                else
+                else {
                     lastCommand = new MoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                }
 
                 lastCommand->execute();
 
-                if (IsInCheck(currentTurn)) 
+                if (IsInCheck(currentTurn)) {
                     lastCommand->undo();
+                }
                 else {
-                    if (highlightedPiece->isFirstMove)
+                    if (highlightedPiece->isFirstMove) {
                         highlightedPiece->isFirstMove = false;
+                    }
 
                     currentTurn = !currentTurn;
                     isMoveLegal = true;
                 }
             }
         }
+    }
 }
 
 bool Chess::IsWithinBoard(Position pos) {
@@ -536,13 +553,16 @@ bool Chess::IsInCheck(bool team, Piece& holderPiece) {
 }
 
 bool Chess::IsCheckmate(bool team) {
-    Piece checkingPiece = pieces[0];
-    if (IsInCheck(team, checkingPiece)) {
+    Piece checkingPieceObject;
+    if (IsInCheck(team, checkingPieceObject)) {
         std::vector<Position> moves;
         SetPossibleMovementsVector(*(GetKingPiece(team)), moves);
 
+        bool b2 = !IsPositionAttacked(checkingPieceObject.pos, team);
+        bool b3 = !CanCheckBeBlocked(checkingPieceObject, team);
+
         //Can king run, can the attacking piece be captured
-        if (moves.size() == 0 && !IsPositionAttacked(checkingPiece.pos, !checkingPiece.isWhite) && !CanCheckBeBlocked(checkingPiece, team))
+        if (moves.size() == 0 && b2 && b3)
             return true;
     }
     return false;
@@ -902,6 +922,4 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
     }
 }
 
-Chess::~Chess()
-{
-}
+Chess::~Chess() {}

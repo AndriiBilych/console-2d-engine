@@ -15,17 +15,18 @@
 		castling, 
 		en passant))
 * game recording
-* Restart
 * captured score difference
-* features list in readme
 * stepping through the game after completion
-* status of the game update in the title of the window
+* features list in readme
 * 
 * Bugs-----------------------------------------------------------------------
 * When playing with a computer if after player move the figure of opposite color was selected
 the hilighting and possible moves are displayed incorrectly
 * When playing against another player possible moves are displayed if the opposite color piece is selected 
 even if it's the other team's turn
+* Game stops when checkmating - doesn't show checkmate in the title and final move - 
+possible reason is AI loop is infinitely looking for moves IsCheckmate - ispositionAttacked doesn't check if the piece can be captured 
+and returns true even if position is attacked by king but king can't actually capture the piece
 * Extras----------------------------------------------------------------------
 * 
 * Checkout chess github repositories
@@ -34,6 +35,7 @@ even if it's the other team's turn
 * Piece-Square table
 * machine learning
 * menu(for boolean values)
+* Restart
 */
 #include "Chess.h"
 

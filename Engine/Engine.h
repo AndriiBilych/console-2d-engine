@@ -77,6 +77,7 @@ public:
 		//Allocate and assign memory for the screen Buffer
 		m_screen = new CHAR_INFO[m_screenWidth * m_screenHeight + 1];
 		std::memset(m_screen, 0, sizeof(CHAR_INFO) * m_screenWidth * m_screenHeight);
+		swprintf_s(titleString, 256, L"Default");
 
 		m_bufferSize = { (short)m_screenWidth, (short)m_screenHeight};
 		m_bufferPosition = { 0, 0 };
@@ -111,6 +112,11 @@ public:
 			m_screen[y * m_screenWidth + x].Char.UnicodeChar = c;
 			m_screen[y * m_screenWidth + x].Attributes = color;
 		}
+	}
+
+	void ChangeTitle(const wchar_t* s)
+	{
+		swprintf_s(titleString, 256, s);
 	}
 
 	void DrawTextToBuffer(int x, int y, std::string_view str)
@@ -225,9 +231,10 @@ protected:
 				m_mouseOldState[m] = m_mouseNewState[m];
 			}
 
-			//Add stats
-			//swprintf(&m_screen[(m_screenHeight - 1) * m_screenWidth], 50, L"deltaTime: %.5fs FPS: %5.0f", deltaTime, 1.0f / deltaTime);
+			//Update window title
+			SetConsoleTitle(titleString);
 
+			//Update console
 			WriteConsoleOutput(m_hConsole, m_screen, { (short)m_screenWidth, (short)m_screenHeight }, { 0,0 }, &m_rect);
 		}
 	}
@@ -244,6 +251,7 @@ public:
 private:
 	int m_screenWidth;
 	int m_screenHeight;
+	wchar_t titleString[256];
 	CHAR_INFO* m_screen;
 	HANDLE m_hConsole;
 	HANDLE m_hConsoleIn;
