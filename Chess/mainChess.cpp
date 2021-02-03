@@ -1,10 +1,11 @@
 /*Todo:
 * Simplify/optimize code (
 	stl algorithms,
-	IsPositionAttacked() - LookForChecks() - IsInCheck() - IsCheckmate(),
+	IsPositionAttacked(),
+	SetPossibleMovementsVector()
 	new operator invocations,
 	const references and const functions,
-	if (condition) return bool; => return condition,
+	LPCWSTR tutorial - writing title - DisplayChess(),
 	makeMove function,
 	possibleMovements dependency bullshit in IsMovePossible(),
 	merge command(

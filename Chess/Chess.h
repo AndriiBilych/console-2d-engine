@@ -24,7 +24,7 @@ public:
     bool CanBeCaptured(Piece*);
     bool IsCaptureLegal(Piece*, Piece*);
     bool IsMoveLegal(Piece* piece, Position newPos);
-    bool LookForChecks(Piece);
+    bool IsAttackingKing(Piece);
     bool CanCheckBeBlocked(Piece, bool);
     Piece* GetPieceByCoordinate(Position);
     Piece* GetPieceByCoordinate(signed short, signed short);

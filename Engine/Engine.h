@@ -77,7 +77,7 @@ public:
 		//Allocate and assign memory for the screen Buffer
 		m_screen = new CHAR_INFO[m_screenWidth * m_screenHeight + 1];
 		std::memset(m_screen, 0, sizeof(CHAR_INFO) * m_screenWidth * m_screenHeight);
-		swprintf_s(titleString, 256, L"Default");
+		swprintf_s(m_titleString, 256, L"Default");
 
 		m_bufferSize = { (short)m_screenWidth, (short)m_screenHeight};
 		m_bufferPosition = { 0, 0 };
@@ -116,7 +116,7 @@ public:
 
 	void ChangeTitle(const wchar_t* s)
 	{
-		swprintf_s(titleString, 256, s);
+		swprintf_s(m_titleString, 256, s);
 	}
 
 	void DrawTextToBuffer(int x, int y, std::string_view str)
@@ -135,7 +135,7 @@ protected:
 			if (!Update(m_deltaTime))
 				m_isRunning = false;
 
-			// Handle Keyboard Input
+			//Handle Keyboard Input
 			for (int i = 0; i < 256; i++)
 			{
 				m_keyNewState[i] = GetAsyncKeyState(i);
@@ -160,14 +160,14 @@ protected:
 				m_keyOldState[i] = m_keyNewState[i];
 			}
 
-			// Handle Mouse Input - Check for window events
+			//Handle Mouse Input - Check for window events
 			INPUT_RECORD inBuf[32];
 			DWORD events = 0;
 			GetNumberOfConsoleInputEvents(m_hConsoleIn, &events);
 			if (events > 0)
 				ReadConsoleInput(m_hConsoleIn, inBuf, events, &events);
 
-			// Handle events
+			//Handle events
 			for (DWORD i = 0; i < events; i++)
 			{
 				switch (inBuf[i].EventType)
@@ -209,6 +209,7 @@ protected:
 				}
 			}
 
+			//Handle mouse states
 			for (int m = 0; m < 5; m++)
 			{
 				m_mouse[m].pressed = false;
@@ -232,7 +233,7 @@ protected:
 			}
 
 			//Update window title
-			SetConsoleTitle(titleString);
+			SetConsoleTitle(m_titleString);
 
 			//Update console
 			WriteConsoleOutput(m_hConsole, m_screen, { (short)m_screenWidth, (short)m_screenHeight }, { 0,0 }, &m_rect);
@@ -251,7 +252,7 @@ public:
 private:
 	int m_screenWidth;
 	int m_screenHeight;
-	wchar_t titleString[256];
+	wchar_t m_titleString[256];
 	CHAR_INFO* m_screen;
 	HANDLE m_hConsole;
 	HANDLE m_hConsoleIn;
