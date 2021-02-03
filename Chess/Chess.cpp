@@ -1,5 +1,4 @@
 #include "Chess.h"
-#include <string>
 
 Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     : Engine(width, height, fontWidth, fontHeight)
@@ -58,9 +57,9 @@ bool Chess::Update(float deltaTime)
     for (int i = 0, x_w = checkerboardOriginX + 8, x_b = checkerboardOriginX + 8, y_w = 0, y_b = 7; i < pieces.size(); i++) {
         if (pieces[i].isTaken)
         {
-            pieces[i].isWhite ? x_w++ : x_b++;
-            pieces[i].pos.x = pieces[i].isWhite ? x_w : x_b;
-            pieces[i].pos.y = pieces[i].isWhite ? y_w : y_b;
+            pieces[i].color ? x_w++ : x_b++;
+            pieces[i].pos.x = pieces[i].color ? x_w : x_b;
+            pieces[i].pos.y = pieces[i].color ? y_w : y_b;
 
             if (x_w > 16)
             {
@@ -103,14 +102,14 @@ bool Chess::Update(float deltaTime)
                             auto clickedPiece = GetPieceByCoordinate(clickedPos);
 
                             /*if the highlighted square is not empty && if the correct piece is choosen on this turn*/
-                            if (currentTurn == highlightedPiece->isWhite) {
+                            if (currentTurn == highlightedPiece->color) {
 
                                 //Move only to possible movements-------------------------------------this needs to be a function for ai
                                 if (IsMovePossible(clickedPos)) {
 
                                     //Calculate conditions for special moves like castling, pawn double move, en passant, promotions
                                     auto captureCondition = clickedPiece != nullptr
-                                        && clickedPiece->isWhite != highlightedPiece->isWhite;
+                                        && clickedPiece->color != highlightedPiece->color;
 
                                     auto castleCondition = clickedPiece == nullptr
                                         && highlightedPiece->symbol == king
@@ -124,19 +123,19 @@ bool Chess::Update(float deltaTime)
                                     auto enPassantClickedSide = clickedPos.x - highlightedPos.x > 0; // true - right side, false - left side
                                     auto enPassantPiece = GetPieceByCoordinate(highlightedPos + Position(enPassantClickedSide ? 1 : -1, 0));
                                     auto enPassantCaptureCondition = enPassantPiece != nullptr
-                                        && enPassantPiece->isWhite != highlightedPiece->isWhite
+                                        && enPassantPiece->color != highlightedPiece->color
                                         && enPassantPiece->isEnPassantAvailable;
 
                                     auto promotionCondition = clickedPiece == nullptr
                                         && highlightedPiece->symbol == pawn
-                                        && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
-                                            || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
+                                        && (highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY
+                                            || !highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                                     auto promotionCaptureCondition = clickedPiece != nullptr
                                         && highlightedPiece->symbol == pawn
-                                        && clickedPiece->isWhite != highlightedPiece->isWhite
-                                        && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
-                                            || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
+                                        && clickedPiece->color != highlightedPiece->color
+                                        && (highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY
+                                            || !highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                                     //Choose an appropriate move based on conditions and invoke a corresponding command
                                     //En passant and promotion capture should be checked before the capture
@@ -144,7 +143,7 @@ bool Chess::Update(float deltaTime)
                                         lastCommand = new EnPassantCaptureCommand(
                                             highlightedPiece,
                                             enPassantPiece,
-                                            enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playerColor ? 1 : -1),
+                                            enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1),
                                             highlightedPos);
                                     }
                                     else if (promotionCaptureCondition) {
@@ -212,7 +211,7 @@ bool Chess::Update(float deltaTime)
                     else {
                         auto clicked = GetPieceByCoordinate(mouseX, mouseY);
                 
-                        if (clicked != nullptr && (clicked->isWhite == playerColor || !playWithComputer)) {
+                        if (clicked != nullptr && (clicked->color == playerColor || !playWithComputer)) {
                             SetPossibleMovementsVector(*clicked, possibleMovements);
                         }
 
@@ -264,10 +263,10 @@ void Chess::DisplayChess() {
         if (!p.isTaken) {
             auto attr = GetChar(p.pos.x, p.pos.y).Attributes;
             Draw(p.pos.x, p.pos.y, p.symbol, 
-                p.symbol == king && IsInCheck(p.isWhite) ? attr & 0xF | 0xC0 : attr | (p.isWhite ? 0xF : 0x0));
+                p.symbol == king && IsInCheck(p.color) ? attr & 0xF | 0xC0 : attr | (p.color ? 0xF : 0x0));
         }
         else
-            Draw(p.pos.x, p.pos.y, p.symbol, 0x80 | (p.isWhite ? 0xF : 0x0));
+            Draw(p.pos.x, p.pos.y, p.symbol, 0x80 | (p.color ? 0xF : 0x0));
 
     //Draw highlighted square and possible movement
     if (highlightedX != -1 && highlightedY != -1) {
@@ -289,7 +288,7 @@ void Chess::DisplayChess() {
 
 void Chess::DisableEnPassants() {
     for (auto& p : pieces) 
-        if (p.isWhite == currentTurn && p.isEnPassantAvailable)
+        if (p.color == currentTurn && p.isEnPassantAvailable)
             p.isEnPassantAvailable = false;
 }
 
@@ -306,7 +305,7 @@ void Chess::AIMove(bool team) {
                 std::vector<Position> availablePositions;
                 SetPossibleMovementsVector(p, availablePositions);
                 return availablePositions.size() > 0 
-                    && p.isWhite == team
+                    && p.color == team
                     && !p.isTaken; });
             availablePieces.resize(std::distance(begin(availablePieces), it));
 
@@ -326,7 +325,7 @@ void Chess::AIMove(bool team) {
 
                 //Calculate conditions for special moves like castling, pawn double move, en passant, promotions
                 auto captureCondition = clickedPiece != nullptr
-                    && clickedPiece->isWhite != highlightedPiece->isWhite;
+                    && clickedPiece->color != highlightedPiece->color;
 
                 auto castleCondition = clickedPiece == nullptr
                     && highlightedPiece->symbol == king
@@ -340,19 +339,19 @@ void Chess::AIMove(bool team) {
                 auto enPassantClickedSide = clickedPos.x - highlightedPos.x > 0; // true - right side, false - left side
                 auto enPassantPiece = GetPieceByCoordinate(highlightedPos + Position(enPassantClickedSide ? 1 : -1, 0));
                 auto enPassantCaptureCondition = enPassantPiece != nullptr
-                    && enPassantPiece->isWhite != highlightedPiece->isWhite
+                    && enPassantPiece->color != highlightedPiece->color
                     && enPassantPiece->isEnPassantAvailable;
 
                 auto promotionCondition = clickedPiece == nullptr
                     && highlightedPiece->symbol == pawn
-                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
-                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
+                    && (highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY
+                        || !highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                 auto promotionCaptureCondition = clickedPiece != nullptr
                     && highlightedPiece->symbol == pawn
-                    && clickedPiece->isWhite != highlightedPiece->isWhite
-                    && (highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY
-                        || !highlightedPiece->isWhite == playerColor && clickedPos.y == checkerboardOriginY + 7);
+                    && clickedPiece->color != highlightedPiece->color
+                    && (highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY
+                        || !highlightedPiece->color == playerColor && clickedPos.y == checkerboardOriginY + 7);
 
                 //Choose an appropriate move based on conditions and invoke a corresponding command
                 //En passant and promotion capture should be checked before the capture
@@ -360,7 +359,7 @@ void Chess::AIMove(bool team) {
                     lastCommand = new EnPassantCaptureCommand(
                         highlightedPiece,
                         enPassantPiece,
-                        enPassantPiece->pos + Position(0, enPassantPiece->isWhite == playerColor ? 1 : -1),
+                        enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1),
                         highlightedPos);
                 }
                 else if (promotionCaptureCondition) {
@@ -431,7 +430,7 @@ bool Chess::IsWithinBoard(Position pos) {
 //"is that position attacked by any piece of this color"
 bool Chess::IsPositionAttacked(Position pos, bool team) {
     for (auto& p : pieces) {
-        if (p.isWhite == team)
+        if (p.color == team)
             switch (p.symbol)
             {
             case pawn:
@@ -472,48 +471,115 @@ bool Chess::IsPositionAttacked(Position pos, bool team) {
     return false;
 }
 
-bool Chess::IsPositionAttackedByRook(Piece p, Position pos) {
+bool Chess::CanBeCaptured(Piece* capturePiece) {
+    for (auto& p : pieces) {
+        if (p.color != capturePiece->color)
+            switch (p.symbol)
+            {
+            case pawn:
+            {
+                auto move = p.pos;
+                capturePiece->color == playerColor ? move.y -= 1 : move.y += 1;
+
+                if ((move.x - 1 == capturePiece->pos.x || move.x + 1 == capturePiece->pos.x) && move.y == capturePiece->pos.y)
+                    return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                break;
+            }
+            case rook:
+                if (IsPositionAttackedByRook(p, capturePiece->pos))
+                    return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                break;
+            case bishop:
+                if (IsPositionAttackedByBishop(p, capturePiece->pos))
+                    return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                break;
+            case knight:
+                for (auto& m : knightMoves)
+                    if (p.pos + m == capturePiece->pos)
+                        return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                break;
+            case queen:
+                if (IsPositionAttackedByRook(p, capturePiece->pos) || IsPositionAttackedByBishop(p, capturePiece->pos))
+                    return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                break;
+            case king:
+                for (auto& m : kingMoves)
+                    if (p.pos + m == capturePiece->pos)
+                        return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                break;
+            default:
+                break;
+            }
+    }
+    return false;
+}
+
+bool Chess::IsCaptureLegal(Piece* piece, Piece* capturePiece) {
+    Command* com = new CaptureCommand(piece, capturePiece, capturePiece->pos, piece->pos);
+
+    com->execute();
+
+    bool result = IsInCheck(piece->color);
+
+    com->undo();
+
+    return !result;
+}
+
+bool Chess::IsMoveLegal(Piece* piece, Position newPos) {
+    Command* com = new MoveCommand(piece, newPos, piece->pos);
+
+    com->execute();
+
+    bool result = IsInCheck(piece->color);
+
+    com->undo();
+
+    return !result;
+}
+
+bool Chess::IsPositionAttackedByRook(Piece& rook, Position pos) {
     //Top
-    for (auto move = p.pos + Position(0, -1); IsWithinBoard(move); move.y--) {
+    for (auto move = rook.pos + Position(0, -1); IsWithinBoard(move); move.y--) {
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
     //Right
-    for (auto move = p.pos + Position(1, 0); IsWithinBoard(move); move.x++) {
+    for (auto move = rook.pos + Position(1, 0); IsWithinBoard(move); move.x++) {
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
     //Bottom
-    for (auto move = p.pos + Position(0, 1); IsWithinBoard(move); move.y++){
+    for (auto move = rook.pos + Position(0, 1); IsWithinBoard(move); move.y++){
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
     //Left
-    for (auto move = p.pos + Position(-1, 0); IsWithinBoard(move); move.x--){
+    for (auto move = rook.pos + Position(-1, 0); IsWithinBoard(move); move.x--){
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
     return false;
 }
 
-bool Chess::IsPositionAttackedByBishop(Piece p, Position pos) {
+bool Chess::IsPositionAttackedByBishop(Piece& bishop, Position pos) {
     //Top left
-    for (auto move = p.pos + Position(-1, -1); IsWithinBoard(move); move.x--, move.y--) {
+    for (auto move = bishop.pos + Position(-1, -1); IsWithinBoard(move); move.x--, move.y--) {
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
     //Top right
-    for (auto move = p.pos + Position(1, -1); IsWithinBoard(move); move.x++, move.y--){
+    for (auto move = bishop.pos + Position(1, -1); IsWithinBoard(move); move.x++, move.y--){
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
     //Bottom right
-    for (auto move = p.pos + Position(1, 1); IsWithinBoard(move); move.x++, move.y++){
+    for (auto move = bishop.pos + Position(1, 1); IsWithinBoard(move); move.x++, move.y++){
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
     //Bottom left
-    for (auto move = p.pos + Position(-1, 1); IsWithinBoard(move); move.x--, move.y++){
+    for (auto move = bishop.pos + Position(-1, 1); IsWithinBoard(move); move.x--, move.y++){
         if (move == pos) return true;
         if (GetPieceByCoordinate(move) != nullptr) break;
     }
@@ -530,21 +596,21 @@ Piece* Chess::GetPieceByCoordinate(signed short x, signed short y){
 }
 
 Piece* Chess::GetKingPiece(bool team){
-    auto holder = std::find_if(begin(pieces), end(pieces), [team](Piece p) { return p.isWhite == team && p.symbol == king; });
+    auto holder = std::find_if(begin(pieces), end(pieces), [team](Piece p) { return p.color == team && p.symbol == king; });
     return holder == end(pieces) ? nullptr : holder._Unwrapped();
 }
 
 bool Chess::IsMovePossible(Position pos) {
-    return std::find_if(begin(possibleMovements), end(possibleMovements), [pos](Position m) { return m == pos; }) != end(possibleMovements);
+    return std::any_of(begin(possibleMovements), end(possibleMovements), [pos](Position m) { return m == pos; });
 }
 
 bool Chess::IsInCheck(bool team) {
-    return std::find_if(begin(pieces), end(pieces), [team, this](Piece p) { return p.isWhite != team && !p.isTaken && LookForChecks(p); }) != end(pieces);
+    return std::any_of(begin(pieces), end(pieces), [team, this](Piece p) { return p.color != team && !p.isTaken && LookForChecks(p); });
 }
 
 bool Chess::IsInCheck(bool team, Piece& holderPiece) {
     for (int i = 0; i < pieces.size(); i++)
-        if (pieces[i].isWhite != team && !pieces[i].isTaken)
+        if (pieces[i].color != team && !pieces[i].isTaken)
             if (LookForChecks(pieces[i])) {
                 holderPiece = pieces[i];
                 return true;
@@ -556,9 +622,15 @@ bool Chess::IsCheckmate(bool team) {
     Piece checkingPieceObject;
     if (IsInCheck(team, checkingPieceObject)) {
         std::vector<Position> moves;
-        SetPossibleMovementsVector(*(GetKingPiece(team)), moves);
+        Piece* king = GetKingPiece(team);
 
-        bool b2 = !IsPositionAttacked(checkingPieceObject.pos, team);
+        SetPossibleMovementsVector(*king, moves);
+
+        //bool b1 = moves.size() == 0;
+        //if (!b1)
+        //    b1 = std::any_of(begin(moves), end(moves), [this, king](Position pos) { return IsMoveLegal(king, pos); });
+
+        bool b2 = !CanBeCaptured(&checkingPieceObject);
         bool b3 = !CanCheckBeBlocked(checkingPieceObject, team);
 
         //Can king run, can the attacking piece be captured
@@ -575,15 +647,15 @@ bool Chess::LookForChecks(Piece clickedPiece) {
     case pawn:
     {
         auto pos = clickedPiece.pos;
-        clickedPiece.isWhite == playerColor ? pos.y -= 1 : pos.y += 1;
+        clickedPiece.color == playerColor ? pos.y -= 1 : pos.y += 1;
 
         //Captures
         auto leftPiece = GetPieceByCoordinate(pos.x - 1, pos.y);
         auto rightPiece = GetPieceByCoordinate(pos.x + 1, pos.y);
         
-        if (leftPiece != nullptr && leftPiece->isWhite != clickedPiece.isWhite && leftPiece->symbol == 'K') 
+        if (leftPiece != nullptr && leftPiece->color != clickedPiece.color && leftPiece->symbol == 'K') 
             return true;
-        if (rightPiece != nullptr && rightPiece->isWhite != clickedPiece.isWhite && rightPiece->symbol == 'K') 
+        if (rightPiece != nullptr && rightPiece->color != clickedPiece.color && rightPiece->symbol == 'K') 
             return true;
         
         break;
@@ -592,7 +664,7 @@ bool Chess::LookForChecks(Piece clickedPiece) {
         SetRookMovementVector(clickedPiece, movementVector);
         for (auto& m : movementVector) {
             auto piece = GetPieceByCoordinate(m);
-            if (piece != nullptr && piece->symbol == 'K' && piece->isWhite != clickedPiece.isWhite) {
+            if (piece != nullptr && piece->symbol == 'K' && piece->color != clickedPiece.color) {
                 return true;
             }
         }
@@ -601,7 +673,7 @@ bool Chess::LookForChecks(Piece clickedPiece) {
         SetBishopMovementVector(clickedPiece, movementVector);
         for (auto& m : movementVector) {
             auto piece = GetPieceByCoordinate(m);
-            if (piece != nullptr && piece->symbol == 'K' && piece->isWhite != clickedPiece.isWhite) {
+            if (piece != nullptr && piece->symbol == 'K' && piece->color != clickedPiece.color) {
                 return true;
             }
         }
@@ -612,7 +684,7 @@ bool Chess::LookForChecks(Piece clickedPiece) {
             Position pos = clickedPiece.pos + p;
             if (IsWithinBoard(pos)) {
                 auto piece = GetPieceByCoordinate(pos);
-                if (piece != nullptr && piece->isWhite != clickedPiece.isWhite && piece->symbol == 'K') {
+                if (piece != nullptr && piece->color != clickedPiece.color && piece->symbol == 'K') {
                     return true;
                 }
             }
@@ -624,7 +696,7 @@ bool Chess::LookForChecks(Piece clickedPiece) {
         SetBishopMovementVector(clickedPiece, movementVector);
         for (auto& m : movementVector) {
             auto piece = GetPieceByCoordinate(m);
-            if (piece != nullptr && piece->symbol == 'K' && piece->isWhite != clickedPiece.isWhite) {
+            if (piece != nullptr && piece->symbol == 'K' && piece->color != clickedPiece.color) {
                 return true;
             }
         }
@@ -685,7 +757,7 @@ bool Chess::CanCheckBeBlocked(Piece checkingPiece, bool team) {
 
     //Find if any piece can move to a possible position that blocks the check
     for (auto& p : pieces) {
-        if (p.isWhite == team && !p.isTaken) 
+        if (p.color == team && !p.isTaken) 
             SetPossibleMovementsVector(p, possibleMoves);
 
         for (auto& pos : possibleMoves) 
@@ -710,7 +782,7 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
     {
     case pawn:
     {
-        auto yOffset = clickedPiece.isWhite == playerColor ? -1 : 1;
+        auto yOffset = clickedPiece.color == playerColor ? -1 : 1;
         auto piecePos = clickedPiece.pos + Position(0, yOffset);
         
         //Basic movement
@@ -720,19 +792,19 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
         //Captures
         auto leftPiece = GetPieceByCoordinate(piecePos + Position(-1, 0));
         auto rightPiece = GetPieceByCoordinate(piecePos + Position(1, 0));
-        if (leftPiece != nullptr && leftPiece->isWhite != clickedPiece.isWhite) 
+        if (leftPiece != nullptr && leftPiece->color != clickedPiece.color) 
             possibleMovements.emplace_back(leftPiece->pos);
-        if (rightPiece != nullptr && rightPiece->isWhite != clickedPiece.isWhite) 
+        if (rightPiece != nullptr && rightPiece->color != clickedPiece.color) 
             possibleMovements.emplace_back(rightPiece->pos);
 
         //En Passant
         leftPiece = GetPieceByCoordinate(clickedPiece.pos + Position(-1, 0));
         rightPiece = GetPieceByCoordinate(clickedPiece.pos + Position(1, 0));
-        if (leftPiece != nullptr && leftPiece->isWhite != clickedPiece.isWhite && leftPiece->isEnPassantAvailable) {
+        if (leftPiece != nullptr && leftPiece->color != clickedPiece.color && leftPiece->isEnPassantAvailable) {
             possibleMovements.emplace_back(leftPiece->pos);
             possibleMovements.emplace_back(clickedPiece.pos + Position(-1, yOffset));
         }
-        if (rightPiece != nullptr && rightPiece->isWhite != clickedPiece.isWhite && rightPiece->isEnPassantAvailable) {
+        if (rightPiece != nullptr && rightPiece->color != clickedPiece.color && rightPiece->isEnPassantAvailable) {
             possibleMovements.emplace_back(rightPiece->pos);
             possibleMovements.emplace_back(clickedPiece.pos + Position(1, yOffset));
         }
@@ -755,7 +827,7 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
             Position pos(clickedPiece.pos + p);
             auto piece = GetPieceByCoordinate(pos);
             if (IsWithinBoard(pos) && piece == nullptr || 
-                piece != nullptr && piece->isWhite != clickedPiece.isWhite)
+                piece != nullptr && piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
         }
         break;
@@ -769,7 +841,7 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
             if (IsWithinBoard(pos)) {
                 auto piece = GetPieceByCoordinate(pos);
                 if (piece == nullptr ||
-                    piece != nullptr && piece->isWhite != clickedPiece.isWhite) {
+                    piece != nullptr && piece->color != clickedPiece.color) {
                     if (!IsPositionAttacked(pos, !currentTurn))
                         possibleMovements.emplace_back(pos);
                 }
@@ -790,8 +862,8 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
                     }
                     else if (i == leftRook->pos.x)
                     {
-                        if (!IsPositionAttacked(clickedPiece.pos + Position(-1, 0), !clickedPiece.isWhite) 
-                            && !IsPositionAttacked(clickedPiece.pos + Position(-2, 0), !clickedPiece.isWhite))
+                        if (!IsPositionAttacked(clickedPiece.pos + Position(-1, 0), !clickedPiece.color) 
+                            && !IsPositionAttacked(clickedPiece.pos + Position(-2, 0), !clickedPiece.color))
                         possibleMovements.emplace_back(clickedPiece.pos + Position(-2, 0));
                     }
                     else
@@ -810,8 +882,8 @@ void Chess::SetPossibleMovementsVector(Piece clickedPiece, std::vector<Position>
                     }
                     else if (i == rightRook->pos.x)
                     {
-                        if (!IsPositionAttacked(clickedPiece.pos + Position(1, 0), !clickedPiece.isWhite)
-                            && !IsPositionAttacked(clickedPiece.pos + Position(2, 0), !clickedPiece.isWhite))
+                        if (!IsPositionAttacked(clickedPiece.pos + Position(1, 0), !clickedPiece.color)
+                            && !IsPositionAttacked(clickedPiece.pos + Position(2, 0), !clickedPiece.color))
                         possibleMovements.emplace_back(clickedPiece.pos + Position(2, 0));
                     }
                     else
@@ -835,7 +907,7 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }
@@ -846,7 +918,7 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }
@@ -857,7 +929,7 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }
@@ -868,7 +940,7 @@ void Chess::SetRookMovementVector(Piece clickedPiece, std::vector<Position>& pos
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }
@@ -882,7 +954,7 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }
@@ -893,7 +965,7 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }
@@ -904,7 +976,7 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }
@@ -915,7 +987,7 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
         if (piece == nullptr)
             possibleMovements.emplace_back(pos);
         else {
-            if (piece->isWhite != clickedPiece.isWhite)
+            if (piece->color != clickedPiece.color)
                 possibleMovements.emplace_back(pos);
             break;
         }

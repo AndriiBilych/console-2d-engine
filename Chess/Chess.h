@@ -16,11 +16,14 @@ public:
     bool IsWithinBoard(Position);
     void AIMove(bool);
     bool IsPositionAttacked(Position, bool);
-    bool IsPositionAttackedByRook(Piece, Position);
-    bool IsPositionAttackedByBishop(Piece, Position);
+    bool IsPositionAttackedByRook(Piece&, Position);
+    bool IsPositionAttackedByBishop(Piece&, Position);
     bool IsInCheck(bool);
     bool IsInCheck(bool, Piece&);
     bool IsCheckmate(bool);
+    bool CanBeCaptured(Piece*);
+    bool IsCaptureLegal(Piece*, Piece*);
+    bool IsMoveLegal(Piece* piece, Position newPos);
     bool LookForChecks(Piece);
     bool CanCheckBeBlocked(Piece, bool);
     Piece* GetPieceByCoordinate(Position);

@@ -22,15 +22,15 @@ class Piece {
 public:
     Piece() : pos(0, 0) {
         symbol = pawn;
-        this->isWhite = isWhite;
+        this->color = color;
         isFirstMove = true;
         isTaken = false;
         isEnPassantAvailable = false;
     }
 
-    Piece(signed short x, signed short y, Characters c, bool isWhite) : pos(x, y) {
+    Piece(signed short x, signed short y, Characters c, bool color) : pos(x, y) {
         symbol = c;
-        this->isWhite = isWhite;
+        this->color = color;
         isFirstMove = true;
         isTaken = false;
         isEnPassantAvailable = false;
@@ -38,7 +38,7 @@ public:
 
     Position pos;
     Characters symbol;
-    bool isWhite;
+    bool color;
     bool isFirstMove;
     bool isEnPassantAvailable;
     bool isTaken;

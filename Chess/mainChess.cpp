@@ -13,7 +13,8 @@
 		pawn double move, 
 		promotion capture, 
 		castling, 
-		en passant))
+		en passant)),
+	simplify captureCommand like in IsCaptureLegal()
 * game recording
 * captured score difference
 * stepping through the game after completion
