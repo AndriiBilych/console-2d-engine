@@ -472,8 +472,9 @@ bool Chess::IsPositionAttacked(Position pos, bool team) {
 }
 
 bool Chess::CanBeCaptured(Piece* capturePiece) {
+    bool result;
     for (auto& p : pieces) {
-        if (p.color != capturePiece->color)
+        if (p.color != capturePiece->color) {
             switch (p.symbol)
             {
             case pawn:
@@ -510,6 +511,7 @@ bool Chess::CanBeCaptured(Piece* capturePiece) {
             default:
                 break;
             }
+        }
     }
     return false;
 }
@@ -527,15 +529,19 @@ bool Chess::IsCaptureLegal(Piece* piece, Piece* capturePiece) {
 }
 
 bool Chess::IsMoveLegal(Piece* piece, Position newPos) {
-    Command* com = new MoveCommand(piece, newPos, piece->pos);
+    if (GetPieceByCoordinate(newPos) == nullptr) {
+        Command* com = new MoveCommand(piece, newPos, piece->pos);
 
-    com->execute();
+        com->execute();
 
-    bool result = IsInCheck(piece->color);
+        bool result = IsInCheck(piece->color);
 
-    com->undo();
+        com->undo();
 
-    return !result;
+        return !result;
+    }
+
+    return false;
 }
 
 bool Chess::IsPositionAttackedByRook(Piece& rook, Position pos) {
@@ -626,15 +632,13 @@ bool Chess::IsCheckmate(bool team) {
 
         SetPossibleMovementsVector(*king, moves);
 
-        //bool b1 = moves.size() == 0;
-        //if (!b1)
-        //    b1 = std::any_of(begin(moves), end(moves), [this, king](Position pos) { return IsMoveLegal(king, pos); });
+        bool b1 = std::any_of(begin(moves), end(moves), [this, king](Position pos) { return IsMoveLegal(king, pos); });
 
-        bool b2 = !CanBeCaptured(&checkingPieceObject);
-        bool b3 = !CanCheckBeBlocked(checkingPieceObject, team);
+        bool b2 = CanBeCaptured(&checkingPieceObject);
+        bool b3 = CanCheckBeBlocked(checkingPieceObject, team);
 
         //Can king run, can the attacking piece be captured
-        if (moves.size() == 0 && b2 && b3)
+        if (!b1 && !b2 && !b3)
             return true;
     }
     return false;
