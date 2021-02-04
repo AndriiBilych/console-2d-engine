@@ -8,16 +8,8 @@
 	LPCWSTR tutorial - writing title - DisplayChess(),
 	makeMove function,
 	possibleMovements dependency bullshit in IsMovePossible(),
-	merge command(
-		capture&move(remove duplicating move command from capture command), 
-		pawn double move, 
-		promotion capture, 
-		castling, 
-		en passant)),
-	simplify captureCommand like in IsCaptureLegal()
-* game recording
+* game recording (game log in a text document)
 * captured score difference
-* stepping through the game after completion
 * features list in readme
 * 
 * Bugs-----------------------------------------------------------------------

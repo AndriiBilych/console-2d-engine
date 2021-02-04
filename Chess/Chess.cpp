@@ -145,17 +145,10 @@ bool Chess::Update(float deltaTime)
                                         lastCommand = new EnPassantCaptureCommand(
                                             highlightedPiece,
                                             enPassantPiece,
-                                            enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1),
-                                            highlightedPos);
+                                            enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1));
                                     }
                                     else if (promotionCaptureCondition) {
-                                        lastCommand = new PromotionCaptureCommand(
-                                            highlightedPiece,
-                                            clickedPiece, 
-                                            clickedPos, 
-                                            highlightedPos, 
-                                            queen, 
-                                            pawn);
+                                        lastCommand = new PromotionCaptureCommand(highlightedPiece, clickedPiece);
                                     }
                                     //if choosen to castle
                                     else if (castleCondition) {
@@ -167,31 +160,29 @@ bool Chess::Update(float deltaTime)
                                             highlightedPiece,
                                             rook,
                                             clickedPos,
-                                            highlightedPos,
-                                            clickedPos + Position(clickedPos.x > highlightedPos.x ? -1 : 1, 0),
-                                            rook->pos);
+                                            clickedPos + Position(clickedPos.x > highlightedPos.x ? -1 : 1, 0));
                                     }
                                     //if choosen to move pawn two squares on the first move
                                     else if (pawnDoubleMoveCondition) {
-                                        lastCommand = new PawnDoubleMoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                                        lastCommand = new PawnDoubleMoveCommand(highlightedPiece, clickedPos);
                                     }
                                     //en passant capture
                                     else if (captureCondition) {
-                                        lastCommand = new CaptureCommand(highlightedPiece, clickedPiece, clickedPos, highlightedPos);
+                                        lastCommand = new CaptureCommand(highlightedPiece, clickedPiece);
                                     }
                                     //Promotion
                                     else if (promotionCondition) {
-                                        lastCommand = new PromotionCommand(highlightedPiece, clickedPos, highlightedPos, queen, pawn);
+                                        lastCommand = new PromotionCommand(highlightedPiece, clickedPos);
                                     }
                                     //normal movement
                                     else {
-                                        lastCommand = new MoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                                        lastCommand = new MoveCommand(highlightedPiece, clickedPos);
                                     }
                             
-                                    lastCommand->execute();
+                                    commandHistory.AddCommand(lastCommand);
                         
                                     if (IsInCheck(currentTurn)) {
-                                        lastCommand->undo();
+                                        commandHistory.UndoLast();
                                     }
                                     else {
                                         if (highlightedPiece->isFirstMove) {
@@ -234,6 +225,12 @@ bool Chess::Update(float deltaTime)
         else {
             AIMove(!playerColor);
         }
+    }
+    else {
+        if (GetKey(VK_LEFT).pressed)
+            commandHistory.UndoLast();
+        else if (GetKey(VK_RIGHT).pressed)
+            commandHistory.RedoLast();
     }
 
     return true;
@@ -360,17 +357,10 @@ void Chess::AIMove(bool team) {
                 lastCommand = new EnPassantCaptureCommand(
                     highlightedPiece,
                     enPassantPiece,
-                    enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1),
-                    highlightedPos);
+                    enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1));
             }
             else if (promotionCaptureCondition) {
-                lastCommand = new PromotionCaptureCommand(
-                    highlightedPiece,
-                    clickedPiece,
-                    clickedPos,
-                    highlightedPos,
-                    queen,
-                    pawn);
+                lastCommand = new PromotionCaptureCommand(highlightedPiece, clickedPiece);
             }
             //if choosen to castle
             else if (castleCondition) {
@@ -382,31 +372,29 @@ void Chess::AIMove(bool team) {
                     highlightedPiece,
                     rook,
                     clickedPos,
-                    highlightedPos,
-                    clickedPos + Position(clickedPos.x > highlightedPos.x ? -1 : 1, 0),
-                    rook->pos);
+                    clickedPos + Position(clickedPos.x > highlightedPos.x ? -1 : 1, 0));
             }
             //if choosen to move pawn two squares on the first move
             else if (pawnDoubleMoveCondition) {
-                lastCommand = new PawnDoubleMoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                lastCommand = new PawnDoubleMoveCommand(highlightedPiece, clickedPos);
             }
             //en passant capture
             else if (captureCondition) {
-                lastCommand = new CaptureCommand(highlightedPiece, clickedPiece, clickedPos, highlightedPos);
+                lastCommand = new CaptureCommand(highlightedPiece, clickedPiece);
             }
             //Promotion
             else if (promotionCondition) {
-                lastCommand = new PromotionCommand(highlightedPiece, clickedPos, highlightedPos, queen, pawn);
+                lastCommand = new PromotionCommand(highlightedPiece, clickedPos);
             }
             //normal movement
             else {
-                lastCommand = new MoveCommand(highlightedPiece, clickedPos, highlightedPos);
+                lastCommand = new MoveCommand(highlightedPiece, clickedPos);
             }
 
-            lastCommand->execute();
+            commandHistory.AddCommand(lastCommand);
 
             if (IsInCheck(currentTurn)) {
-                lastCommand->undo();
+                commandHistory.UndoLast();
             }
             else {
                 if (highlightedPiece->isFirstMove) {
@@ -517,7 +505,7 @@ bool Chess::CanBeCaptured(Piece* capturePiece) {
 }
 
 bool Chess::IsCaptureLegal(Piece* piece, Piece* capturePiece) {
-    Command* com = new CaptureCommand(piece, capturePiece, capturePiece->pos, piece->pos);
+    Command* com = new CaptureCommand(piece, capturePiece);
 
     com->execute();
 
@@ -530,7 +518,7 @@ bool Chess::IsCaptureLegal(Piece* piece, Piece* capturePiece) {
 
 bool Chess::IsMoveLegal(Piece* piece, Position newPos) {
     if (GetPieceByCoordinate(newPos) == nullptr) {
-        Command* com = new MoveCommand(piece, newPos, piece->pos);
+        Command* com = new MoveCommand(piece, newPos);
 
         com->execute();
 
@@ -747,7 +735,7 @@ bool Chess::CanCheckBeBlocked(Piece checkingPiece, bool team) {
         for (auto& pos : possibleMoves) 
             if (std::find(begin(possibleBlocks), end(possibleBlocks), pos) != end(possibleBlocks)) {
                 //This is needed for a possibility of discovered checks and double checks
-                auto command = new MoveCommand(&p, pos, p.pos);
+                auto command = new MoveCommand(&p, pos);
                 command->execute();
                 if (!IsInCheck(team)) {
                     command->undo();

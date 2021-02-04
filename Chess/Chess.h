@@ -46,7 +46,7 @@ private:
     signed short highlightedY;
     std::vector<Piece> pieces;
     std::vector<Position> possibleMovements;
-    //CommandHistory commandHistory;
+    CommandHistory commandHistory;
     Command* lastCommand;
     Position knightMoves[8] = {
         { -1, -2 },

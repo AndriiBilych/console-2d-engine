@@ -53,8 +53,8 @@ public:
 
 class MoveCommand : public Command {
 public:
-	MoveCommand(Piece* piece, Position pos, Position posPrev) 
-        : _piece(piece), _pos(pos), _posPrev(posPrev){}
+	MoveCommand(Piece* piece, Position newPos) 
+        : _piece(piece), _pos(newPos), _posPrev(piece->pos) {}
 
 	virtual void execute() override {
 		_piece->pos = _pos;
@@ -71,8 +71,8 @@ private:
 
 class PromotionCommand : public Command {
 public:
-    PromotionCommand(Piece* piece, Position pos, Position posPrev, Characters symbol, Characters symbolPrev) 
-        : _piece(piece), _pos(pos), _posPrev(posPrev), _symbol(symbol), _symbolPrev(symbolPrev) {}
+    PromotionCommand(Piece* piece, Position newPos) 
+        : _piece(piece), _pos(newPos), _posPrev(piece->pos), _symbol(queen), _symbolPrev(pawn) {}
 
 	virtual void execute() override {
 		_piece->pos = _pos;
@@ -93,8 +93,8 @@ private:
 
 class PromotionCaptureCommand : public Command {
 public:
-    PromotionCaptureCommand(Piece* piece, Piece* pieceCaptured, Position pos, Position posPrev, Characters symbol, Characters symbolPrev)
-        : _piece(piece), _pieceCaptured(pieceCaptured), _pos(pos), _posPrev(posPrev), _symbol(symbol), _symbolPrev(symbolPrev) {}
+    PromotionCaptureCommand(Piece* piece, Piece* capturedPiece)
+        : _piece(piece), _pieceCaptured(capturedPiece), _pos(capturedPiece->pos), _posPrev(piece->pos), _symbol(queen), _symbolPrev(pawn) {}
 
 	virtual void execute() override {
 		_piece->pos = _pos;
@@ -105,6 +105,7 @@ public:
     virtual void undo() override {
         _piece->pos = _posPrev;
         _piece->symbol = _symbolPrev;
+        _pieceCaptured->pos = _pos;
         _pieceCaptured->isTaken = false;
     }
 private:
@@ -118,8 +119,8 @@ private:
 
 class PawnDoubleMoveCommand : public Command {
 public:
-    PawnDoubleMoveCommand(Piece* piece, Position pos, Position posPrevious) 
-        : _piece(piece), _pos(pos), _posPrevious(posPrevious) {}
+    PawnDoubleMoveCommand(Piece* piece, Position newPos) 
+        : _piece(piece), _pos(newPos), _posPrevious(piece->pos) {}
 
     virtual void execute() override {
         _piece->pos = _pos;
@@ -138,8 +139,8 @@ private:
 
 class CaptureCommand : public Command {
 public:
-    CaptureCommand(Piece* piece, Piece* capturedPiece, Position pos, Position posPrevious) 
-        : _piece(piece), _pieceCaptured(capturedPiece), _pos(pos), _posPrevious(posPrevious){}
+    CaptureCommand(Piece* piece, Piece* capturedPiece) 
+        : _piece(piece), _pieceCaptured(capturedPiece), _pos(capturedPiece->pos), _posPrevious(piece->pos){}
 
 	virtual void execute() override {
 		_piece->pos = _pos;
@@ -148,6 +149,7 @@ public:
 
     virtual void undo() override {
         _piece->pos = _posPrevious;
+        _pieceCaptured->pos = _pos;
         _pieceCaptured->isTaken = false;
     }
 private:
@@ -159,8 +161,8 @@ private:
 
 class EnPassantCaptureCommand : public Command {
 public:
-    EnPassantCaptureCommand(Piece* piece, Piece* capturedPiece, Position pos, Position posPrevious)
-        : _piece(piece), _pieceCaptured(capturedPiece), _pos(pos), _posPrevious(posPrevious) {}
+    EnPassantCaptureCommand(Piece* piece, Piece* capturedPiece, Position pos)
+        : _piece(piece), _pieceCaptured(capturedPiece), _pos(pos), _posPrevious(piece->pos) {}
 
     virtual void execute() override {
         _piece->pos = _pos;
@@ -183,8 +185,8 @@ private:
 
 class CastleCommand : public Command {
 public:
-    CastleCommand(Piece* king, Piece* rook, Position kingPos, Position kingPosPrev, Position rookPos, Position rookPosPrev)
-        : _king(king), _rook(rook), _kingPos(kingPos), _rookPos(rookPos), _kingPosPrev(kingPosPrev), _rookPosPrev(rookPosPrev) {}
+    CastleCommand(Piece* king, Piece* rook, Position kingPos, Position rookPos)
+        : _king(king), _rook(rook), _kingPos(kingPos), _rookPos(rookPos), _kingPosPrev(king->pos), _rookPosPrev(rook->pos) {}
 
     virtual void execute() override {
         _king->pos = _kingPos;
@@ -206,10 +208,21 @@ private:
     Position _rookPosPrev;
 };
 
-//class CommandHistory {
-//public:
-//    void AddComand(Command* cmd) {
-//        cmd->execute();
-//    }
-//    Command* m_commands[200];
-//};
+class CommandHistory {
+public:
+    void AddCommand(Command* cmd) {
+        cmd->execute();
+        m_commands[iterator] = cmd;
+        iterator++;
+    }
+    void UndoLast() {
+        m_commands[--iterator]->undo();
+    }
+    void RedoLast() {
+        m_commands[iterator++]->execute();
+    }
+
+private:
+    int iterator = 0;
+    Command* m_commands[200];
+};
