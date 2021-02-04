@@ -1,6 +1,9 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <typeinfo>
 #include "Engine.h"
 #include "Command.h"
 
@@ -19,7 +22,6 @@ public:
     bool IsPositionAttackedByRook(Piece&, Position);
     bool IsPositionAttackedByBishop(Piece&, Position);
     bool IsInCheck(bool);
-    bool IsInCheck(bool, Piece&);
     bool IsCheckmate(bool);
     bool CanBeCaptured(Piece*);
     bool IsCaptureLegal(Piece*, Piece*);
@@ -44,6 +46,9 @@ private:
     int checkerboardOriginY;
     signed short highlightedX;
     signed short highlightedY;
+    signed short moveCounter;
+    std::string fileName = "GameLog.txt";
+    std::ofstream out;
     std::vector<Piece> pieces;
     std::vector<Position> possibleMovements;
     CommandHistory commandHistory;

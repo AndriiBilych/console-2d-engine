@@ -8,7 +8,6 @@
 	LPCWSTR tutorial - writing title - DisplayChess(),
 	makeMove function,
 	possibleMovements dependency bullshit in IsMovePossible(),
-* game recording (game log in a text document)
 * captured score difference
 * features list in readme
 * 
@@ -26,6 +25,12 @@ even if it's the other team's turn
 * machine learning
 * menu(for boolean values)
 * Restart
+* Notation:
+	!: good move,
+	?: poor move,
+	0-0 kingside castle
+	0-0-0 queenside castle
+	ambiguous notation for when two figures can make the same move(knights and rooks)
 */
 #include "Chess.h"
 

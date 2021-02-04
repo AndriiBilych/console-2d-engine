@@ -8,7 +8,7 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     //These booleans can be changed - game setting
     randomTeam = true;
     // set randomTeam to false and change second bool value in ternary to specify team
-    playerColor = randomTeam ? rand() % 2 : false; 
+    playerColor = randomTeam ? rand() % 2 : true; 
     playWithComputer = true;
 
     checkerboardOriginX = 1;
@@ -16,6 +16,8 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     highlightedX = -1;
     highlightedY = -1;
     pieces.reserve(32);
+    out = std::ofstream(fileName.c_str());
+    moveCounter = 1;
     //These bools can't be changed - game tracking
     currentTurn = true;
     isGameOver = false;
@@ -79,11 +81,10 @@ bool Chess::Update(float deltaTime)
 
     DisplayChess();
 
-    DisableEnPassants();
+    //Disable EnPassants
+    std::for_each(begin(pieces), end(pieces), [this](Piece& p) { if (p.color == currentTurn && p.isEnPassantAvailable) p.isEnPassantAvailable = false; });
 
     //Game logic
-    /*these brackets are necessary to prevent identifying "else AIMove()" 
-    as an else statement to "if (!IsCheckmate(turn) && GetMouse(0).pressed)" clause*/
     if (!isGameOver) {
         if (currentTurn == playerColor || !playWithComputer) { 
             if (GetMouse(0).pressed) {
@@ -108,6 +109,8 @@ bool Chess::Update(float deltaTime)
 
                                 //Move only to possible movements-------------------------------------this needs to be a function for ai
                                 if (IsMovePossible(clickedPos)) {
+
+                                    bool isCapture = false;
 
                                     //Calculate conditions for special moves like castling, pawn double move, en passant, promotions
                                     auto captureCondition = clickedPiece != nullptr
@@ -146,9 +149,11 @@ bool Chess::Update(float deltaTime)
                                             highlightedPiece,
                                             enPassantPiece,
                                             enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1));
+                                        isCapture = true;
                                     }
                                     else if (promotionCaptureCondition) {
                                         lastCommand = new PromotionCaptureCommand(highlightedPiece, clickedPiece);
+                                        isCapture = true;
                                     }
                                     //if choosen to castle
                                     else if (castleCondition) {
@@ -169,6 +174,7 @@ bool Chess::Update(float deltaTime)
                                     //en passant capture
                                     else if (captureCondition) {
                                         lastCommand = new CaptureCommand(highlightedPiece, clickedPiece);
+                                        isCapture = true;
                                     }
                                     //Promotion
                                     else if (promotionCondition) {
@@ -191,8 +197,24 @@ bool Chess::Update(float deltaTime)
                                 
                                         currentTurn = !currentTurn;
 
-                                        if (IsInCheck(currentTurn))
+                                        bool isInCheck = IsInCheck(currentTurn);
+                                        if (isInCheck)
                                             isGameOver = IsCheckmate(currentTurn);
+
+                                        //Record the move
+                                        char clickedFile = (char)(playerColor ? 97 + (clickedPos.x - 1) : 97 + 8 - clickedPos.x);
+                                        std::string hilightedFile(1, (char)(playerColor ? 97 + (highlightedPos.x - 1) : 97 + 8 - highlightedPos.x));
+                                        short line = (playerColor ? 8 - clickedPos.y : clickedPos.y + 1);
+                                        std::string symbol(1, highlightedPiece->symbol);
+                                        bool isPawn = highlightedPiece->symbol == pawn;
+
+                                        out << (playerColor ? std::to_string(moveCounter++) + ". " : "");
+                                        out << (isPawn ? "" : symbol);
+                                        out << (isCapture && isPawn ? hilightedFile : "");
+                                        out << (isCapture ? "x" : "");
+                                        out << clickedFile;
+                                        out << line;
+                                        out << (isGameOver ? "#" : (isInCheck ? "+" : "")) << " ";
                                     }
                                 }
                             }
@@ -226,6 +248,7 @@ bool Chess::Update(float deltaTime)
             AIMove(!playerColor);
         }
     }
+    //Stepping through the game
     else {
         if (GetKey(VK_LEFT).pressed)
             commandHistory.UndoLast();
@@ -287,10 +310,6 @@ void Chess::DisplayChess() {
     }
 }
 
-void Chess::DisableEnPassants() {
-    std::for_each(begin(pieces), end(pieces), [this](Piece& p) { if (p.color == currentTurn && p.isEnPassantAvailable) p.isEnPassantAvailable = false; });
-}
-
 void Chess::AIMove(bool team) {
     bool isMoveLegal = false;
     std::vector<Piece> availablePieces(16);
@@ -320,6 +339,8 @@ void Chess::AIMove(bool team) {
         auto highlightedPos = highlightedPiece->pos;
         auto clickedPiece = GetPieceByCoordinate(clickedPos);
         if (IsMovePossible(clickedPos)) {
+
+            bool isCapture = false;
 
             //Calculate conditions for special moves like castling, pawn double move, en passant, promotions
             auto captureCondition = clickedPiece != nullptr
@@ -358,9 +379,11 @@ void Chess::AIMove(bool team) {
                     highlightedPiece,
                     enPassantPiece,
                     enPassantPiece->pos + Position(0, enPassantPiece->color == playerColor ? 1 : -1));
+                isCapture = true;
             }
             else if (promotionCaptureCondition) {
                 lastCommand = new PromotionCaptureCommand(highlightedPiece, clickedPiece);
+                isCapture = true;
             }
             //if choosen to castle
             else if (castleCondition) {
@@ -381,6 +404,7 @@ void Chess::AIMove(bool team) {
             //en passant capture
             else if (captureCondition) {
                 lastCommand = new CaptureCommand(highlightedPiece, clickedPiece);
+                isCapture = true;
             }
             //Promotion
             else if (promotionCondition) {
@@ -403,6 +427,20 @@ void Chess::AIMove(bool team) {
 
                 currentTurn = !currentTurn;
                 isMoveLegal = true;
+
+                //Record the move
+                char clickedFile = (char)(playerColor ? 97 + (clickedPos.x - 1) : 97 + 8 - clickedPos.x);
+                std::string hilightedFile(1, (char)(playerColor ? 97 + (highlightedPos.x - 1) : 97 + 8 - highlightedPos.x));
+                short line = (playerColor ? 8 - clickedPos.y : clickedPos.y + 1);
+                std::string symbol(1, highlightedPiece->symbol);
+                bool isPawn = highlightedPiece->symbol == pawn;
+
+                out << (!playerColor ? std::to_string(moveCounter++) + ". " : "");
+                out << (isPawn ? "" : symbol);
+                out << (isCapture && isPawn ? hilightedFile : "");
+                out << (isCapture ? "x" : "");
+                out << clickedFile;
+                out << line << " ";
             }
         }
     }
@@ -470,22 +508,27 @@ bool Chess::CanBeCaptured(Piece* capturePiece) {
                 auto move = p.pos;
                 capturePiece->color == playerColor ? move.y -= 1 : move.y += 1;
 
-                if ((move.x - 1 == capturePiece->pos.x || move.x + 1 == capturePiece->pos.x) && move.y == capturePiece->pos.y)
-                    return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                //Don't forget there multiple pawns
+                if ((move.x - 1 == capturePiece->pos.x || move.x + 1 == capturePiece->pos.x) 
+                    && move.y == capturePiece->pos.y && IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece))
+                    return true;
                 break;
             }
             case rook:
-                if (IsPositionAttackedByRook(p, capturePiece->pos))
-                    return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                //Don't forget there multiple rooks
+                if (IsPositionAttackedByRook(p, capturePiece->pos) && IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece))
+                    return true;
                 break;
             case bishop:
-                if (IsPositionAttackedByBishop(p, capturePiece->pos))
-                    return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                //Don't forget there multiple bishops
+                if (IsPositionAttackedByBishop(p, capturePiece->pos) && IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece))
+                    return true;
                 break;
             case knight:
                 for (auto& m : knightMoves)
-                    if (p.pos + m == capturePiece->pos)
-                        return IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece);
+                    //Don't forget there multiple knights
+                    if (p.pos + m == capturePiece->pos && IsCaptureLegal(GetPieceByCoordinate(p.pos), capturePiece))
+                        return true;
                 break;
             case queen:
                 if (IsPositionAttackedByRook(p, capturePiece->pos) || IsPositionAttackedByBishop(p, capturePiece->pos))
@@ -966,4 +1009,6 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
     }
 }
 
-Chess::~Chess() {}
+Chess::~Chess() {
+    out.close();
+}
