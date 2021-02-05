@@ -32,6 +32,7 @@ public:
     Piece* GetPieceByCoordinate(signed short, signed short);
     Piece* GetKingPiece(bool);
     std::vector<Piece> GetPiecesThatCanMove(bool);
+    std::vector<Piece> GetNotTakenPieces(bool);
     bool IsMovePossible(Position);
     void SetPossibleMovementsVector(Piece, std::vector<Position>&);
     void SetRookMovementVector(Piece, std::vector<Position>&);

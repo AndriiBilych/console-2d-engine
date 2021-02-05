@@ -9,13 +9,9 @@
 	makeMove function,
 	possibleMovements dependency bullshit in IsMovePossible(),
 	rewrite SetPossibleMovements to return  a vector of moves
-* Stalemate, draw(by insufficient material)
-	King vs. king
-	King and bishop vs. king
-	King and knight vs. king
-	King and bishop vs. king and bishop of the same color as the opponent's bishop
 * add chess to main readme
 * features list in readme
+* incorporate position class into engine
 * 
 * Bugs-----------------------------------------------------------------------
 * When playing with a computer if after player move the figure of opposite color was selected

@@ -6,7 +6,7 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     srand(time(NULL));
     
     //These booleans can be changed - game setting
-    randomTeam = false;
+    randomTeam = true;
     // set randomTeam to false and change second bool value in ternary to specify team
     playerColor = randomTeam ? rand() % 2 : true; 
     playWithComputer = true;
@@ -30,7 +30,7 @@ bool Chess::Start() {
     //Assign symbols and coordinates to pieces
     for (int i = 0; i < 8; i++) { //Pawns
         pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 6 : 1), pawn, true, 1));
-        //pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 1 : 6), pawn, false, 1));
+        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 1 : 6), pawn, false, 1));
     }
 
     //White figures
@@ -44,14 +44,14 @@ bool Chess::Start() {
     pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 7 : 0), rook, true, 5));
 
     //Black figures
-    //pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
-    //pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
-    //pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
+    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
     pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 0 : 7), queen, false, 9));
     pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 0 : 7), king, false, 10));
-    //pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
-    //pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
-    //pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
+    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
 
     return true; 
 }
@@ -663,6 +663,15 @@ std::vector<Piece> Chess::GetPiecesThatCanMove(bool team) {
     return availablePieces;
 }
 
+std::vector<Piece> Chess::GetNotTakenPieces(bool team) {
+    std::vector<Piece> availablePieces(16);
+    auto it = std::copy_if(begin(pieces), end(pieces), begin(availablePieces), [this, team](Piece p) {
+        return p.color == team && !p.isTaken; });
+
+    availablePieces.resize(std::distance(begin(availablePieces), it));
+    return availablePieces;
+}
+
 bool Chess::IsMovePossible(Position pos) {
     return std::any_of(begin(possibleMovements), end(possibleMovements), [pos](Position m) { return m == pos; });
 }
@@ -700,10 +709,44 @@ bool Chess::IsDraw() {
 
     if (!IsInCheck(currentTurn) && !movesAvailable)
         return true;
+
+    //Insufficient material
+    auto oneTeam = GetNotTakenPieces(currentTurn);
+    auto anotherTeam = GetNotTakenPieces(!currentTurn);
+
     //King vs king
-    //King and bishop vs king
-    //King and knight vs king
-    //King and bishop vs king and bishop of the same color as the opponent's bishop
+    if (oneTeam.size() == 1 && anotherTeam.size() == 1)
+        return true;
+    //King and bishop/knight vs king
+    else if (oneTeam.size() == 2 && anotherTeam.size() == 1)
+        return (oneTeam[0].symbol == king
+            || oneTeam[0].symbol == knight
+            || oneTeam[0].symbol == bishop)
+            && (oneTeam[1].symbol == king
+            || oneTeam[1].symbol == knight
+            || oneTeam[1].symbol == bishop);
+    else if (oneTeam.size() == 1 && anotherTeam.size() == 2) 
+        return (anotherTeam[0].symbol == king
+            || anotherTeam[0].symbol == knight
+            || anotherTeam[0].symbol == bishop)
+            && (anotherTeam[1].symbol == king
+            || anotherTeam[1].symbol == knight
+            || anotherTeam[1].symbol == bishop);
+    //Kings and same color bishops
+    else if (oneTeam.size() == 2 && anotherTeam.size() == 2) {
+        if ((oneTeam[0].symbol == king || oneTeam[0].symbol == bishop)
+            && (oneTeam[1].symbol == king || oneTeam[1].symbol == bishop)
+            && (anotherTeam[0].symbol == king || anotherTeam[0].symbol == bishop)
+            && (anotherTeam[1].symbol == king || anotherTeam[1].symbol == bishop)) {
+
+            auto bish1 = oneTeam[0].symbol == king ? oneTeam[1] : oneTeam[0];
+            auto bish2 = anotherTeam[0].symbol == king ? anotherTeam[1] : anotherTeam[0];
+            auto isBish1Black = bish1.pos.x % 2 == 0 && bish1.pos.y % 2 == 0 || bish1.pos.x % 2 != 0 && bish1.pos.y % 2 != 0;
+            auto isBish2Black = bish2.pos.x % 2 == 0 && bish2.pos.y % 2 == 0 || bish2.pos.x % 2 != 0 && bish2.pos.y % 2 != 0;
+            return isBish1Black == isBish2Black;
+        }
+    }
+
     return false;
 }
 
