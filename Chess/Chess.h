@@ -22,6 +22,7 @@ public:
     bool IsPositionAttackedByBishop(Piece&, Position);
     bool IsInCheck(bool);
     bool IsCheckmate(bool);
+    bool IsDraw();
     bool CanBeCaptured(Piece*);
     bool IsCaptureLegal(Piece*, Piece*);
     bool IsMoveLegal(Piece* piece, Position newPos);
@@ -30,6 +31,7 @@ public:
     Piece* GetPieceByCoordinate(Position);
     Piece* GetPieceByCoordinate(signed short, signed short);
     Piece* GetKingPiece(bool);
+    std::vector<Piece> GetPiecesThatCanMove(bool);
     bool IsMovePossible(Position);
     void SetPossibleMovementsVector(Piece, std::vector<Position>&);
     void SetRookMovementVector(Piece, std::vector<Position>&);
@@ -41,6 +43,7 @@ private:
     bool currentTurn;
     bool playWithComputer;
     bool isGameOver;
+    bool isDraw;
     int checkerboardOriginX;
     int checkerboardOriginY;
     signed short highlightedX;

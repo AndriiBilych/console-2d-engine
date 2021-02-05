@@ -6,7 +6,7 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     srand(time(NULL));
     
     //These booleans can be changed - game setting
-    randomTeam = true;
+    randomTeam = false;
     // set randomTeam to false and change second bool value in ternary to specify team
     playerColor = randomTeam ? rand() % 2 : true; 
     playWithComputer = true;
@@ -23,13 +23,14 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     //These bools can't be changed - game tracking
     currentTurn = true;
     isGameOver = false;
+    isDraw = false;
 }
 
 bool Chess::Start() { 
     //Assign symbols and coordinates to pieces
     for (int i = 0; i < 8; i++) { //Pawns
         pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 6 : 1), pawn, true, 1));
-        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 1 : 6), pawn, false, 1));
+        //pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 1 : 6), pawn, false, 1));
     }
 
     //White figures
@@ -43,14 +44,14 @@ bool Chess::Start() {
     pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 7 : 0), rook, true, 5));
 
     //Black figures
-    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
-    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
-    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
+    //pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
+    //pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
+    //pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
     pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 0 : 7), queen, false, 9));
     pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 0 : 7), king, false, 10));
-    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
-    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
-    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
+    //pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
+    //pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
+    //pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
 
     return true; 
 }
@@ -65,7 +66,7 @@ bool Chess::Update(float deltaTime)
     std::for_each(begin(pieces), end(pieces), [this](Piece& p) { if (p.color == currentTurn && p.isEnPassantAvailable) p.isEnPassantAvailable = false; });
 
     //Game logic
-    if (!isGameOver) {
+    if (!isGameOver && !isDraw) {
         if (currentTurn == playerColor || !playWithComputer) { 
             if (GetMouse(0).pressed) {
                 auto mouseX = GetMouseX();
@@ -180,6 +181,8 @@ bool Chess::Update(float deltaTime)
                                         bool isInCheck = IsInCheck(currentTurn);
                                         if (isInCheck)
                                             isGameOver = IsCheckmate(currentTurn);
+                                        else
+                                            isDraw = IsDraw();
 
                                         //Record the move
                                         char clickedFile = (char)(playerColor ? 97 + (clickedPos.x - 1) : 97 + 8 - clickedPos.x);
@@ -291,10 +294,12 @@ void Chess::DisplayChess() {
         Draw(checkerboardOriginX + x, checkerboardOriginY + 8, playerColor ? 97 + x : 97 + 8 - (x + 1), 0xF);
 
     //Draw who's turn in title
-    if (!isGameOver)
-        ChangeTitle(currentTurn ? L"WHITE TURN" : L"BLACK TURN");
-    else
+    if (isGameOver)
         ChangeTitle(!currentTurn ? L"WHITE WON" : L"BLACK WON");
+    else if (isDraw)
+        ChangeTitle(L"Draw");
+    else
+        ChangeTitle(currentTurn ? L"WHITE TURN" : L"BLACK TURN");
 
     //Draw pieces
     for (auto& p : pieces)
@@ -326,21 +331,15 @@ void Chess::DisplayChess() {
 
 void Chess::AIMove(bool team) {
     bool isMoveLegal = false;
-    std::vector<Piece> availablePieces(16);
     //Change random generator seed every ai move for true randomness
     srand(time(NULL));
 
     while (!isMoveLegal) {
         //get all pieces that can move
-        auto it = std::copy_if(begin(pieces), end(pieces), begin(availablePieces), [this, team](Piece p) {
-            std::vector<Position> availablePositions;
-            SetPossibleMovementsVector(p, availablePositions);
-            return availablePositions.size() > 0 
-                && p.color == team
-                && !p.isTaken; });
-        availablePieces.resize(std::distance(begin(availablePieces), it));
+        auto availablePieces = GetPiecesThatCanMove(team);
 
         //choose random piece
+        if (availablePieces.empty()) return;
         auto highlightedPiece = GetPieceByCoordinate(availablePieces[rand() % availablePieces.size()].pos) ;
 
         //get all possible moves of that piece
@@ -651,6 +650,19 @@ Piece* Chess::GetKingPiece(bool team){
     return holder == end(pieces) ? nullptr : holder._Unwrapped();
 }
 
+std::vector<Piece> Chess::GetPiecesThatCanMove(bool team) {
+    std::vector<Piece> availablePieces(16);
+    auto it = std::copy_if(begin(pieces), end(pieces), begin(availablePieces), [this, team](Piece p) {
+        std::vector<Position> availablePositions;
+        SetPossibleMovementsVector(p, availablePositions);
+        return availablePositions.size() > 0
+            && p.color == team
+            && !p.isTaken; });
+
+    availablePieces.resize(std::distance(begin(availablePieces), it));
+    return availablePieces;
+}
+
 bool Chess::IsMovePossible(Position pos) {
     return std::any_of(begin(possibleMovements), end(possibleMovements), [pos](Position m) { return m == pos; });
 }
@@ -673,6 +685,26 @@ bool Chess::IsCheckmate(bool team) {
     bool b3 = CanCheckBeBlocked(*(checkingPiece._Unwrapped()), team);
 
     return !b1 && !b2 && !b3;
+}
+
+bool Chess::IsDraw() {
+    //Stalemate
+    auto availablePieces = GetPiecesThatCanMove(currentTurn);
+    bool movesAvailable = std::any_of(begin(availablePieces), end(availablePieces), [this](Piece& p) {
+        std::vector<Position> possibleMoves;
+        SetPossibleMovementsVector(p, possibleMoves);
+        if (possibleMoves.size() != 0)
+            return std::any_of(begin(possibleMoves), end(possibleMoves), [this, &p](Position pos) { return IsMoveLegal(&p, pos); });
+        return false;
+    });
+
+    if (!IsInCheck(currentTurn) && !movesAvailable)
+        return true;
+    //King vs king
+    //King and bishop vs king
+    //King and knight vs king
+    //King and bishop vs king and bishop of the same color as the opponent's bishop
+    return false;
 }
 
 bool Chess::IsAttackingKing(Piece clickedPiece) {

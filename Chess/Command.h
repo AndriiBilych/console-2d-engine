@@ -217,15 +217,19 @@ public:
         cmd->execute();
         m_commands[iterator] = cmd;
         iterator++;
+        size++;
     }
     void UndoLast() {
-        m_commands[--iterator]->undo();
+        if (iterator > 0)
+            m_commands[--iterator]->undo();
     }
     void RedoLast() {
-        m_commands[iterator++]->execute();
+        if (iterator < size)
+            m_commands[iterator++]->execute();
     }
 
 private:
     int iterator = 0;
+    int size = 0;
     Command* m_commands[200];
 };

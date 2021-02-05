@@ -8,7 +8,13 @@
 	LPCWSTR tutorial - writing title - DisplayChess(),
 	makeMove function,
 	possibleMovements dependency bullshit in IsMovePossible(),
-* Stalemate, draw(king vs king)
+	rewrite SetPossibleMovements to return  a vector of moves
+* Stalemate, draw(by insufficient material)
+	King vs. king
+	King and bishop vs. king
+	King and knight vs. king
+	King and bishop vs. king and bishop of the same color as the opponent's bishop
+* add chess to main readme
 * features list in readme
 * 
 * Bugs-----------------------------------------------------------------------
@@ -31,6 +37,9 @@ even if it's the other team's turn
 	0-0 kingside castle
 	0-0-0 queenside castle
 	ambiguous notation for when two figures can make the same move(knights and rooks)
+* Draw
+	dead position,
+	repetition
 */
 #include "Chess.h"
 
