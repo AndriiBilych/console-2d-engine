@@ -26,14 +26,16 @@ public:
         isFirstMove = true;
         isTaken = false;
         isEnPassantAvailable = false;
+        score = 0;
     }
 
-    Piece(signed short x, signed short y, Characters c, bool color) : pos(x, y) {
+    Piece(signed short x, signed short y, Characters c, bool color, signed short score) : pos(x, y) {
         symbol = c;
         this->color = color;
         isFirstMove = true;
         isTaken = false;
         isEnPassantAvailable = false;
+        this->score = score;
     }
 
     Position pos;
@@ -42,6 +44,7 @@ public:
     bool isFirstMove;
     bool isEnPassantAvailable;
     bool isTaken;
+    signed short score;
 };
 
 class Command {

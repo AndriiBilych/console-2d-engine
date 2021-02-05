@@ -18,6 +18,8 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     pieces.reserve(32);
     out = std::ofstream(fileName.c_str());
     moveCounter = 1;
+    whiteScore = 0;
+    blackScore = 0;
     //These bools can't be changed - game tracking
     currentTurn = true;
     isGameOver = false;
@@ -26,29 +28,29 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
 bool Chess::Start() { 
     //Assign symbols and coordinates to pieces
     for (int i = 0; i < 8; i++) { //Pawns
-        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 6 : 1), pawn, true));
-        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 1 : 6), pawn, false));
+        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 6 : 1), pawn, true, 1));
+        pieces.emplace_back(Piece(checkerboardOriginX + i, checkerboardOriginY + (playerColor ? 1 : 6), pawn, false, 1));
     }
 
     //White figures
-    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 7 : 0), rook, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 7 : 0), knight, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 7 : 0), bishop, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 7 : 0), queen, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 7 : 0), king, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 7 : 0), bishop, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 7 : 0), knight, true));
-    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 7 : 0), rook, true));
+    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 7 : 0), rook, true, 5));
+    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 7 : 0), knight, true, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 7 : 0), bishop, true, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 7 : 0), queen, true, 9));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 7 : 0), king, true, 10));
+    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 7 : 0), bishop, true, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 7 : 0), knight, true, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 7 : 0), rook, true, 5));
 
     //Black figures
-    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 0 : 7), rook, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 0 : 7), knight, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 0 : 7), queen, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 0 : 7), king, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 0 : 7), knight, false));
-    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false));
+    pieces.emplace_back(Piece(checkerboardOriginX, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
+    pieces.emplace_back(Piece(checkerboardOriginX + 1, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 2, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 3 : 4), checkerboardOriginY + (playerColor ? 0 : 7), queen, false, 9));
+    pieces.emplace_back(Piece(checkerboardOriginX + (playerColor ? 4 : 3), checkerboardOriginY + (playerColor ? 0 : 7), king, false, 10));
+    pieces.emplace_back(Piece(checkerboardOriginX + 5, checkerboardOriginY + (playerColor ? 0 : 7), bishop, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 6, checkerboardOriginY + (playerColor ? 0 : 7), knight, false, 3));
+    pieces.emplace_back(Piece(checkerboardOriginX + 7, checkerboardOriginY + (playerColor ? 0 : 7), rook, false, 5));
 
     return true; 
 }
@@ -56,28 +58,6 @@ bool Chess::Start() {
 bool Chess::Update(float deltaTime)
 {
     ClearScreen();
-
-    //Assign coordinates for captured pieces
-    for (int i = 0, x_w = checkerboardOriginX + 8, x_b = checkerboardOriginX + 8, y_w = 0, y_b = 7; i < pieces.size(); i++) {
-        if (pieces[i].isTaken)
-        {
-            pieces[i].color ? x_w++ : x_b++;
-            pieces[i].pos.x = pieces[i].color ? x_w : x_b;
-            pieces[i].pos.y = pieces[i].color ? y_w : y_b;
-
-            if (x_w > 16)
-            {
-                x_w -= 8;
-                y_w++;
-            }
-
-            if (x_b > 16)
-            {
-                x_b -= 8;
-                y_b--;
-            }
-        }
-    }
 
     DisplayChess();
 
@@ -260,6 +240,40 @@ bool Chess::Update(float deltaTime)
 }
 
 void Chess::DisplayChess() {
+    //Assign coordinates for captured pieces
+    for (int i = 0, x_w = checkerboardOriginX + 8, x_b = checkerboardOriginX + 8, y_w = 0, y_b = 7; i < pieces.size(); i++) {
+        if (pieces[i].isTaken)
+        {
+            pieces[i].color ? x_w++ : x_b++;
+            pieces[i].pos.x = pieces[i].color ? x_w : x_b;
+            pieces[i].pos.y = pieces[i].color ? y_w : y_b;
+
+            if (x_w > 16)
+            {
+                x_w -= 8;
+                y_w++;
+            }
+
+            if (x_b > 16)
+            {
+                x_b -= 8;
+                y_b--;
+            }
+        }
+    }
+
+    //Calculate Score
+    whiteScore = 0;
+    blackScore = 0;
+    std::for_each(begin(pieces), end(pieces), [this](Piece& p) {if (!p.color && p.isTaken) whiteScore += p.score; });
+    std::for_each(begin(pieces), end(pieces), [this](Piece& p) {if (p.color && p.isTaken) blackScore += p.score; });
+
+    //Draw Score
+    if (whiteScore != 0 && whiteScore > blackScore)
+        DrawTextToBuffer(9, (playerColor ? 5 : 2), std::to_string(whiteScore - blackScore).insert(0, 1, '+'));
+    if (blackScore != 0 && whiteScore < blackScore)
+        DrawTextToBuffer(9, (!playerColor ? 5 : 2), std::to_string(blackScore - whiteScore).insert(0, 1, '+'));
+
     //Draw board
     for (int y = 0; y < 8; y++) {
         //Draw numbers

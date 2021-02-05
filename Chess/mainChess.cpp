@@ -8,7 +8,7 @@
 	LPCWSTR tutorial - writing title - DisplayChess(),
 	makeMove function,
 	possibleMovements dependency bullshit in IsMovePossible(),
-* captured score difference
+* Stalemate, draw(king vs king)
 * features list in readme
 * 
 * Bugs-----------------------------------------------------------------------

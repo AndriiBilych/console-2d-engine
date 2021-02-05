@@ -15,7 +15,6 @@ public:
     bool Start();
     bool Update(float);
     void DisplayChess();
-    void DisableEnPassants();
     bool IsWithinBoard(Position);
     void AIMove(bool);
     bool IsPositionAttacked(Position, bool);
@@ -47,6 +46,8 @@ private:
     signed short highlightedX;
     signed short highlightedY;
     signed short moveCounter;
+    signed short blackScore;
+    signed short whiteScore;
     std::string fileName = "GameLog.txt";
     std::ofstream out;
     std::vector<Piece> pieces;
