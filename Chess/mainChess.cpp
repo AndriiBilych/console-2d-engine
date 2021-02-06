@@ -11,13 +11,13 @@
 	rewrite SetPossibleMovements to return  a vector of moves
 * add chess to main readme
 * features list in readme
-* incorporate position class into engine
 * 
 * Bugs-----------------------------------------------------------------------
 * When playing with a computer if after player move the figure of opposite color was selected
 the hilighting and possible moves are displayed incorrectly
 * When playing against another player possible moves are displayed if the opposite color piece is selected 
 even if it's the other team's turn
+* AddCommand is working wrong - size ends up bigger than actual size and bigger than iterator
 * Extras----------------------------------------------------------------------
 * 
 * Checkout chess github repositories

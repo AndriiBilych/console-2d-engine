@@ -9,13 +9,6 @@
 #include <stdlib.h>
 #include "Engine.h"
 
-class Position
-{
-public:
-    Position(int x, int y) { this->x = x; this->y = y; }
-    int x, y;
-};
-
 class MovieMatrix :
     public Engine
 {

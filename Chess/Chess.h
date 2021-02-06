@@ -5,7 +5,7 @@
 #include <iostream>
 #include <typeinfo>
 #include "Engine.h"
-#include "Command.h"
+#include "Utility.h"
 
 class Chess :
     public Engine
@@ -17,6 +17,7 @@ public:
     void DisplayChess();
     bool IsWithinBoard(Position);
     void AIMove(bool);
+    bool SetAppropriateCommand(Piece* highlightedPiece, Position clickedPos);
     bool IsPositionAttacked(Position, bool);
     bool IsPositionAttackedByRook(Piece&, Position);
     bool IsPositionAttackedByBishop(Piece&, Position);

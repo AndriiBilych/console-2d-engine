@@ -39,6 +39,46 @@ protected:
 	float* ref;
 };
 
+class Position {
+public:
+	Position(int x, int y) : x(x), y(y) {}
+	Position operator+ (const Position& other) const { return Position(x + other.x, y + other.y); }
+	bool operator== (const Position& other) const { return x == other.x && y == other.y; }
+	bool operator!= (const Position& other) const { return x != other.x || y != other.y; }
+
+	int x, y;
+};
+
+class Command {
+public:
+	virtual ~Command() {}
+	virtual void execute() = 0;
+	virtual void undo() = 0;
+};
+
+class CommandHistory {
+public:
+	void AddCommand(Command* cmd) {
+		cmd->execute();
+		m_commands[iterator] = cmd;
+		iterator++;
+		size++;
+	}
+	void UndoLast() {
+		if (iterator > 0)
+			m_commands[--iterator]->undo();
+	}
+	void RedoLast() {
+		if (iterator < size)
+			m_commands[iterator++]->execute();
+	}
+
+private:
+	int iterator = 0;
+	int size = 0;
+	Command* m_commands[200];
+};
+
 class Engine
 {
 public:

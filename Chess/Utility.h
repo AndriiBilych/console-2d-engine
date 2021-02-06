@@ -8,21 +8,11 @@ enum Characters {
     king = 'K'
 };
 
-class Position {
-public:
-    Position(signed short x, signed short y) : x(x), y(y) {}
-    Position operator+ (const Position& other) const { return Position(x + other.x, y + other.y); }
-    bool operator== (const Position& other) const { return x == other.x && y == other.y; }
-    bool operator!= (const Position& other) const { return x != other.x || y != other.y; }
-
-    signed short x, y;
-};
-
 class Piece {
 public:
     Piece() : pos(0, 0) {
         symbol = pawn;
-        this->color = color;
+        color = true;
         isFirstMove = true;
         isTaken = false;
         isEnPassantAvailable = false;
@@ -45,13 +35,6 @@ public:
     bool isEnPassantAvailable;
     bool isTaken;
     signed short score;
-};
-
-class Command {
-public:
-	virtual ~Command() {}
-	virtual void execute() = 0;
-	virtual void undo() = 0;
 };
 
 class MoveCommand : public Command {
@@ -209,27 +192,4 @@ private:
     Position _rookPos;
     Position _kingPosPrev;
     Position _rookPosPrev;
-};
-
-class CommandHistory {
-public:
-    void AddCommand(Command* cmd) {
-        cmd->execute();
-        m_commands[iterator] = cmd;
-        iterator++;
-        size++;
-    }
-    void UndoLast() {
-        if (iterator > 0)
-            m_commands[--iterator]->undo();
-    }
-    void RedoLast() {
-        if (iterator < size)
-            m_commands[iterator++]->execute();
-    }
-
-private:
-    int iterator = 0;
-    int size = 0;
-    Command* m_commands[200];
 };
