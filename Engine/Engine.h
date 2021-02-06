@@ -64,6 +64,10 @@ public:
 		iterator++;
 		size++;
 	}
+	void RemoveLast() {
+		UndoLast();
+		size--;
+	}
 	void UndoLast() {
 		if (iterator > 0)
 			m_commands[--iterator]->undo();

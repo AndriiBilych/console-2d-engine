@@ -84,51 +84,46 @@ bool Chess::Update(float deltaTime)
                         {
                             auto clickedPos = Position(mouseX, mouseY);
 
-                            /*if the highlighted square is not empty && if the correct piece is choosen on this turn*/
-                            if (currentTurn == highlightedPiece->color) {
+                            /*if the highlighted square is not empty && if the correct piece is choosen on this turn
+                            && if clicked position is one of the possible movements*/
+                            if (currentTurn == highlightedPiece->color && IsMovePossible(clickedPos)) {
 
-                                //Move only to possible movements-------------------------------------this needs to be a function for ai
-                                if (IsMovePossible(clickedPos)) {
-
-                                    bool isCapture = SetAppropriateCommand(highlightedPiece, clickedPos);
+                                bool isCapture = SetAppropriateCommand(highlightedPiece, clickedPos);
                             
-                                    commandHistory.AddCommand(lastCommand);
-                        
-                                    if (IsInCheck(currentTurn)) {
-                                        commandHistory.UndoLast();
-                                    }
-                                    else {
-                                        if (highlightedPiece->isFirstMove) {
-                                            highlightedPiece->isFirstMove = false;
-                                        }
+                                commandHistory.AddCommand(lastCommand);
                                 
-                                        currentTurn = !currentTurn;
+                                //If move is not legal
+                                if (IsInCheck(currentTurn)) {
+                                    commandHistory.RemoveLast();
+                                }
+                                //If move is legal
+                                else {
+                                    if (highlightedPiece->isFirstMove) highlightedPiece->isFirstMove = false;
+                                
+                                    currentTurn = !currentTurn;
 
-                                        bool isInCheck = IsInCheck(currentTurn);
-                                        if (isInCheck)
-                                            isGameOver = IsCheckmate(currentTurn);
-                                        else
-                                            isDraw = IsDraw();
+                                    bool isInCheck = IsInCheck(currentTurn);
+                                    isInCheck ? isGameOver = IsCheckmate(currentTurn) : isDraw = IsDraw();
 
-                                        //Record the move
-                                        char clickedFile = (char)(playerColor ? 97 + (clickedPos.x - 1) : 97 + 8 - clickedPos.x);
-                                        std::string hilightedFile(1, (char)(playerColor ? 97 + (highlightedPos.x - 1) : 97 + 8 - highlightedPos.x));
-                                        short line = (playerColor ? 8 - clickedPos.y : clickedPos.y + 1);
-                                        std::string symbol(1, highlightedPiece->symbol);
-                                        bool isPawn = highlightedPiece->symbol == pawn;
+                                    //Record the move
+                                    char clickedFile = (char)(playerColor ? 97 + (clickedPos.x - 1) : 97 + 8 - clickedPos.x);
+                                    std::string hilightedFile(1, (char)(playerColor ? 97 + (highlightedPos.x - 1) : 97 + 8 - highlightedPos.x));
+                                    short line = (playerColor ? 8 - clickedPos.y : clickedPos.y + 1);
+                                    std::string symbol(1, highlightedPiece->symbol);
+                                    bool isPawn = highlightedPiece->symbol == pawn;
 
-                                        out << (playerColor ? std::to_string(moveCounter++) + ". " : "");
-                                        out << (isPawn ? "" : symbol);
-                                        out << (isCapture && isPawn ? hilightedFile : "");
-                                        out << (isCapture ? "x" : "");
-                                        out << clickedFile;
-                                        out << line;
-                                        out << (isGameOver ? "#" : (isInCheck ? "+" : "")) << " ";
-                                    }
+                                    out << (playerColor ? std::to_string(moveCounter++) + ". " : "");
+                                    out << (isPawn ? "" : symbol);
+                                    out << (isCapture && isPawn ? hilightedFile : "");
+                                    out << (isCapture ? "x" : "");
+                                    out << clickedFile;
+                                    out << line;
+                                    out << (isGameOver ? "#" : (isInCheck ? "+" : "")) << " ";
                                 }
                             }
                         }
 
+                        //Clean up variables
                         possibleMovements.clear();
                         highlightedX = -1;
                         highlightedY = -1;
@@ -137,7 +132,7 @@ bool Chess::Update(float deltaTime)
                     else {
                         auto clicked = GetPieceByCoordinate(mouseX, mouseY);
                 
-                        if (clicked != nullptr && (clicked->color == playerColor || !playWithComputer)) {
+                        if (clicked != nullptr && clicked->color == currentTurn) {
                             SetPossibleMovementsVector(*clicked, possibleMovements);
                         }
 
@@ -282,15 +277,14 @@ void Chess::AIMove(bool team) {
             commandHistory.AddCommand(lastCommand);
 
             if (IsInCheck(currentTurn)) {
-                commandHistory.UndoLast();
+                commandHistory.RemoveLast();
             }
             else {
-                if (highlightedPiece->isFirstMove) {
-                    highlightedPiece->isFirstMove = false;
-                }
+                if (highlightedPiece->isFirstMove) highlightedPiece->isFirstMove = false;
 
                 currentTurn = !currentTurn;
                 isMoveLegal = true;
+
 
                 //Record the move
                 char clickedFile = (char)(playerColor ? 97 + (clickedPos.x - 1) : 97 + 8 - clickedPos.x);
@@ -307,6 +301,11 @@ void Chess::AIMove(bool team) {
                 out << line << " ";
             }
         }
+
+        //Clean up variables
+        highlightedX = -1;
+        highlightedY = -1;
+        possibleMovements.clear();
     }
 }
 
@@ -438,13 +437,13 @@ bool Chess::IsPositionAttacked(Position pos, bool team) {
 bool Chess::CanBeCaptured(Piece* capturePiece) {
     bool result;
     for (auto& p : pieces) {
-        if (p.color != capturePiece->color) {
+        if (p.color != capturePiece->color && !p.isTaken) {
             switch (p.symbol)
             {
             case pawn:
             {
                 auto move = p.pos;
-                capturePiece->color == playerColor ? move.y -= 1 : move.y += 1;
+                !capturePiece->color && playerColor ? move.y -= 1 : move.y += 1;
 
                 //Don't forget there multiple pawns
                 if ((move.x - 1 == capturePiece->pos.x || move.x + 1 == capturePiece->pos.x) 
