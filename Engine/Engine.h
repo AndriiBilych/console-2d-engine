@@ -46,6 +46,7 @@ protected:
 
 class Position {
 public:
+	Position() : x(0), y(0) {}
 	Position(int x, int y) : x(x), y(y) {}
 	Position operator+ (const Position& const other) const { return Position(x + other.x, y + other.y); }
 	bool operator== (const Position& const other) const { return x == other.x && y == other.y; }
