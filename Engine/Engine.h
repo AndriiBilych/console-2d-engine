@@ -1,12 +1,15 @@
-/*Description: Basic framework for drawing 2d graphics inside Windows console,
-* class Engine is built for inheriting by other class and overwriting Start(), Update(float) and a constructor.
-* These 2 functions should return true to run the application. Start() is called at the beginning of a program,
-* Update(float) is called every time Engine draws character buffer to console, basically every frame.
-* After inheriting and creating an object of the inherited class the program can be started by calling StartExecution()
-* on created object.
-* Features: unicode character support, character color change, console window resizing,
-* drawing pixel-like characters, timer class for benchmarking(can be used to determine, how fast a certain scope is executed
-* by adding Timer object to a scope and passing holder variable to a Timer constructor).
+/*Description: 
+	This is an implementation of a simple 2d engine in windows console with projects and animations included.
+Engine is a greatly simplified version of olcConsoleGameEngine by javidx9. 
+
+	All graphics are implemented by employing ASCII characters and are displayed by using Windows function WriteConsoleOutput. 
+Engine accepts keyboard and mouse input by utilizing GetAsyncKeyState and ReadConsoleInput accordingly. Output of these functions 
+is then converted to three states for each key: pressed, released, held. Besides Engine class Engine.h also contains: Timer class 
+for timing functions and any scopes, Position class for representing two-dimensional coordinates and simplifying certain operations, 
+Command and CommandHistory classes for the use of undo/redo functionality and recording certain events
+
+	The entire engine is written in the header Engine.h. To use the engine a project class must inherit from the 
+Engine class. See projects for details.
 * 
 * Made by Andrii Bilych
 */
