@@ -30,11 +30,17 @@ Chess engine
 ---------
 Standard game of Chess, full implementation of all the rules and mechanics
 
+<<<<<<< HEAD
 ![Screenshot]("Screenshot 1.png")
 
 ![Screenshot]("Screenshot 2.png")
 
 ![Screenshot]("Screenshot 3.png")
+=======
+![Screenshot](Screenshot1.png)
+![Screenshot](Screenshot2.png)
+![Screenshot](Screenshot3.png)
+>>>>>>> Updated readme
 
 Animations
 
