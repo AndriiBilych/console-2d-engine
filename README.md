@@ -3,16 +3,16 @@
 
 Description
 ---------
-	This is an implementation of a simple 2d engine in windows console with projects and animations included.
+This is an implementation of a simple 2d engine in windows console with projects and animations included.
 Engine is a greatly simplified version of olcConsoleGameEngine by javidx9. 
 
-	All graphics are implemented by employing ASCII characters and are displayed by using Windows function WriteConsoleOutput. 
+All graphics are implemented by employing ASCII characters and are displayed by using Windows function WriteConsoleOutput. 
 Engine accepts keyboard and mouse input by utilizing GetAsyncKeyState and ReadConsoleInput accordingly. Output of these functions 
 is then converted to three states for each key: pressed, released, held. Besides Engine class Engine.h also contains: Timer class 
 for timing functions and any scopes, Position class for representing two-dimensional coordinates and simplifying certain operations, 
 Command and CommandHistory classes for the use of undo/redo functionality and recording certain events
 
-	The entire engine is written in the header Engine.h. To use the engine a project class must inherit from the 
+The entire engine is written in the header Engine.h. To use the engine a project class must inherit from the 
 Engine class. See projects for details.
 	
 Projects: 
@@ -30,9 +30,11 @@ Chess engine
 ---------
 Standard game of Chess, full implementation of all the rules and mechanics
 
-![Screenshot](Screenshot 1.png)
-![Screenshot](Screenshot 2.png)
-![Screenshot](Screenshot 3.png)
+![Screenshot]("Screenshot 1.png")
+
+![Screenshot]("Screenshot 2.png")
+
+![Screenshot]("Screenshot 3.png")
 
 Animations
 
