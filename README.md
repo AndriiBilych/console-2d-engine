@@ -4,7 +4,9 @@
 Description
 ---------
 This is an implementation of a simple 2d engine in windows console with projects and animations included. Engine is a greatly 
-simplified version of olcConsoleGameEngine by javidx9. 
+simplified version of olcConsoleGameEngine by javidx9. Text might look stretched, because, normally text has 2:1 relation between
+Height and width but for squares to look like squares that relation must be 1:1 and console doesn't support different sized symbols.
+Therefore text has twice the width. 
 
 All graphics are implemented by employing ASCII characters and are displayed by using Windows function WriteConsoleOutput. 
 Engine accepts keyboard and mouse input by utilizing GetAsyncKeyState and ReadConsoleInput accordingly. Output of these functions 
