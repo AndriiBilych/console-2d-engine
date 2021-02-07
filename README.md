@@ -3,8 +3,8 @@
 
 Description
 ---------
-This is an implementation of a simple 2d engine in windows console with projects and animations included.
-Engine is a greatly simplified version of olcConsoleGameEngine by javidx9. 
+This is an implementation of a simple 2d engine in windows console with projects and animations included. Engine is a greatly 
+simplified version of olcConsoleGameEngine by javidx9. 
 
 All graphics are implemented by employing ASCII characters and are displayed by using Windows function WriteConsoleOutput. 
 Engine accepts keyboard and mouse input by utilizing GetAsyncKeyState and ReadConsoleInput accordingly. Output of these functions 
@@ -30,17 +30,11 @@ Chess engine
 ---------
 Standard game of Chess, full implementation of all the rules and mechanics
 
-<<<<<<< HEAD
-![Screenshot]("Screenshot 1.png")
-
-![Screenshot]("Screenshot 2.png")
-
-![Screenshot]("Screenshot 3.png")
-=======
 ![Screenshot](Screenshot1.png)
+
 ![Screenshot](Screenshot2.png)
+
 ![Screenshot](Screenshot3.png)
->>>>>>> Updated readme
 
 Animations
 
