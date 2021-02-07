@@ -1,9 +1,6 @@
 #pragma once
 #include <vector>
 #include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <typeinfo>
 #include "Engine.h"
 #include "Utility.h"
 
@@ -15,12 +12,12 @@ public:
     bool Start();
     bool Update(float);
     void DisplayChess();
-    bool IsWithinBoard(Position);
+    bool IsWithinBoard(Position) const;
     void AIMove(bool);
     bool SetAppropriateCommand(Piece* highlightedPiece, Position clickedPos);
     bool IsPositionAttacked(Position, bool);
-    bool IsPositionAttackedByRook(Piece&, Position);
-    bool IsPositionAttackedByBishop(Piece&, Position);
+    bool IsPositionAttackedByRook(const Piece&, Position);
+    bool IsPositionAttackedByBishop(const Piece&, Position);
     bool IsInCheck(bool);
     bool IsCheckmate(bool);
     bool IsDraw();
@@ -59,6 +56,11 @@ private:
     std::vector<Position> possibleMovements;
     CommandHistory commandHistory;
     Command* lastCommand;
+    /*Debug*/
+    //std::string debugFileName = "DebugLog.txt";
+    //std::ofstream debugOutput;
+    //bool debugIsWritten;
+    /*Debug*/
     Position knightMoves[8] = {
         { -1, -2 },
         { -2, -1 },

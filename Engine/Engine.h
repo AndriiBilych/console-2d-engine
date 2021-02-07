@@ -16,6 +16,8 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <fstream>
+#include <iostream>
 #include <string_view>
 
 class Timer
@@ -42,9 +44,9 @@ protected:
 class Position {
 public:
 	Position(int x, int y) : x(x), y(y) {}
-	Position operator+ (const Position& other) const { return Position(x + other.x, y + other.y); }
-	bool operator== (const Position& other) const { return x == other.x && y == other.y; }
-	bool operator!= (const Position& other) const { return x != other.x || y != other.y; }
+	Position operator+ (const Position& const other) const { return Position(x + other.x, y + other.y); }
+	bool operator== (const Position& const other) const { return x == other.x && y == other.y; }
+	bool operator!= (const Position& const other) const { return x != other.x || y != other.y; }
 
 	int x, y;
 };
@@ -249,7 +251,6 @@ protected:
 
 				default:
 					break;
-					// We don't care just at the moment
 				}
 			}
 
@@ -320,16 +321,16 @@ private:
 	int m_mousePosX;
 	int m_mousePosY;
 public:
-	int GetScreenWidth() { return m_screenWidth; }
-	int GetScreenHeight() { return m_screenHeight; }
-	CHAR_INFO GetChar(int x, int y) { return m_screen[y * m_screenWidth + x]; }
-	keyState GetKey(unsigned short n) { 
+	int GetScreenWidth() const { return m_screenWidth; }
+	int GetScreenHeight() const { return m_screenHeight; }
+	CHAR_INFO GetChar(int x, int y) const { return m_screen[y * m_screenWidth + x]; }
+	keyState GetKey(unsigned short n) const { 
 		if (n < 256)
 			return m_keys[n];
 		else
 			throw "Accessing illegal keyState";
 	}
-	int GetMouseX() { return m_mousePosX; }
-	int GetMouseY() { return m_mousePosY; }
-	keyState GetMouse(int nMouseButtonID) { return m_mouse[nMouseButtonID]; }
+	int GetMouseX() const { return m_mousePosX; }
+	int GetMouseY() const { return m_mousePosY; }
+	keyState GetMouse(int nMouseButtonID) const { return m_mouse[nMouseButtonID]; }
 };

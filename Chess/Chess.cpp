@@ -1,5 +1,12 @@
 #include "Chess.h"
 
+//Debugging
+//static uint32_t m_allocCount;
+//void* operator new(size_t size) {
+//    m_allocCount++;
+//    return malloc(size);
+//}
+
 Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     : Engine(width, height, fontWidth, fontHeight)
 {
@@ -7,7 +14,7 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     
     //These booleans can be changed - game setting
     randomTeam = true;
-    // set randomTeam to false and change second bool value in ternary to specify team
+    // set randomTeam to false and change second bool value in ternary to specify playable color
     playerColor = randomTeam ? rand() % 2 : true; 
     playWithComputer = true;
 
@@ -20,10 +27,15 @@ Chess::Chess(int width, int height, int fontWidth, int fontHeight)
     moveCounter = 1;
     whiteScore = 0;
     blackScore = 0;
+
     //These bools can't be changed - game tracking
     currentTurn = true;
     isGameOver = false;
     isDraw = false;
+
+    //Debugging
+    //debugIsWritten = false;
+    //debugOutput = std::ofstream(debugFileName.c_str());
 }
 
 bool Chess::Start() { 
@@ -158,6 +170,10 @@ bool Chess::Update(float deltaTime)
             commandHistory.UndoLast();
         else if (GetKey(VK_RIGHT).pressed)
             commandHistory.RedoLast();
+
+        //Debugging
+        /*if (!debugIsWritten)
+            debugOutput << "new was used " << m_allocCount << " times";*/
     }
 
     return true;
@@ -383,7 +399,7 @@ bool Chess::SetAppropriateCommand(Piece* highlightedPiece, Position clickedPos) 
     return isCapture;
 }
 
-bool Chess::IsWithinBoard(Position pos) {
+bool Chess::IsWithinBoard(Position pos) const {
     return pos.x >= checkerboardOriginX &&
         pos.x <= checkerboardOriginX + 7 &&
         pos.y >= checkerboardOriginY &&
@@ -430,6 +446,54 @@ bool Chess::IsPositionAttacked(Position pos, bool team) {
             default:
                 break;
             }
+    }
+    return false;
+}
+
+bool Chess::IsPositionAttackedByRook(const Piece& rook, Position pos) {
+    //Top
+    for (auto move = rook.pos + Position(0, -1); IsWithinBoard(move); move.y--) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
+    }
+    //Right
+    for (auto move = rook.pos + Position(1, 0); IsWithinBoard(move); move.x++) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
+    }
+    //Bottom
+    for (auto move = rook.pos + Position(0, 1); IsWithinBoard(move); move.y++) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
+    }
+    //Left
+    for (auto move = rook.pos + Position(-1, 0); IsWithinBoard(move); move.x--) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
+    }
+    return false;
+}
+
+bool Chess::IsPositionAttackedByBishop(const Piece& bishop, Position pos) {
+    //Top left
+    for (auto move = bishop.pos + Position(-1, -1); IsWithinBoard(move); move.x--, move.y--) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
+    }
+    //Top right
+    for (auto move = bishop.pos + Position(1, -1); IsWithinBoard(move); move.x++, move.y--) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
+    }
+    //Bottom right
+    for (auto move = bishop.pos + Position(1, 1); IsWithinBoard(move); move.x++, move.y++) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
+    }
+    //Bottom left
+    for (auto move = bishop.pos + Position(-1, 1); IsWithinBoard(move); move.x--, move.y++) {
+        if (move == pos) return true;
+        if (GetPieceByCoordinate(move) != nullptr) break;
     }
     return false;
 }
@@ -512,55 +576,7 @@ bool Chess::IsMoveLegal(Piece* piece, Position newPos) {
     return false;
 }
 
-bool Chess::IsPositionAttackedByRook(Piece& rook, Position pos) {
-    //Top
-    for (auto move = rook.pos + Position(0, -1); IsWithinBoard(move); move.y--) {
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    //Right
-    for (auto move = rook.pos + Position(1, 0); IsWithinBoard(move); move.x++) {
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    //Bottom
-    for (auto move = rook.pos + Position(0, 1); IsWithinBoard(move); move.y++){
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    //Left
-    for (auto move = rook.pos + Position(-1, 0); IsWithinBoard(move); move.x--){
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    return false;
-}
-
-bool Chess::IsPositionAttackedByBishop(Piece& bishop, Position pos) {
-    //Top left
-    for (auto move = bishop.pos + Position(-1, -1); IsWithinBoard(move); move.x--, move.y--) {
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    //Top right
-    for (auto move = bishop.pos + Position(1, -1); IsWithinBoard(move); move.x++, move.y--){
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    //Bottom right
-    for (auto move = bishop.pos + Position(1, 1); IsWithinBoard(move); move.x++, move.y++){
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    //Bottom left
-    for (auto move = bishop.pos + Position(-1, 1); IsWithinBoard(move); move.x--, move.y++){
-        if (move == pos) return true;
-        if (GetPieceByCoordinate(move) != nullptr) break;
-    }
-    return false;
-}
-
-Piece* Chess::GetPieceByCoordinate(Position pos){
+Piece* Chess::GetPieceByCoordinate(Position pos) {
     auto holder = std::find_if(begin(pieces), end(pieces), [pos](Piece p) { return p.pos == pos && !p.isTaken; });
     return holder == end(pieces) ? nullptr : holder._Unwrapped();
 }
@@ -1024,4 +1040,5 @@ void Chess::SetBishopMovementVector(Piece clickedPiece, std::vector<Position>& p
 
 Chess::~Chess() {
     out.close();
+    //debugOutput.close();
 }
