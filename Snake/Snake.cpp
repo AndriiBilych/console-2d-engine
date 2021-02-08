@@ -5,12 +5,14 @@ Snake::Snake(int width, int height, int fontWidth, int fontHeight)
 	moveDir = north;
 	increment = Position(0, -1);
 	timePassed = .0f;
-	timer = .75f;
+	timer = .25f;
 	ChangeTitle(L"Snake");
+	scrHeight = GetScreenHeight();
+	scrWidth = GetScreenWidth();
 }
 
 bool Snake::Start() {
-	body.emplace_back(GetScreenWidth() / 2, GetScreenHeight() / 2);
+	body.emplace_back(scrWidth / 2, scrHeight / 2);
 	body.emplace_back(body[0] + Position(0, 1));
 	body.emplace_back(body[1] + Position(0, 1));
 	body.emplace_back(body[2] + Position(0, 1));
@@ -62,12 +64,26 @@ void Snake::HandleInput() {
 }
 
 void Snake::MoveSnake() {
-	for (int i = body.size() - 1; i >= 0; i--) {
+	for (int i = body.size() - 1; i >= 0; i--) 
 		if (i > 0)
 			body[i] = body[i - 1];
-	}
 
 	body[0] += increment;
+	
+	//Screen overflow protection
+	if (!IsWithinScreen(body[0])) {
+		if (body[0].x < 0) body[0].x = scrWidth;
+		else if (body[0].x > scrWidth) body[0].x = 0;
+		else if (body[0].y < 0) body[0].y = scrHeight;
+		else if (body[0].y > scrHeight) body[0].y = 0;
+	}
+}
+
+bool Snake::IsWithinScreen(Position pos) const {
+	return pos.x >= 0 &&
+		pos.x <= scrWidth &&
+		pos.y >= 0 &&
+		pos.y <= scrHeight;
 }
 
 Snake::~Snake() {
