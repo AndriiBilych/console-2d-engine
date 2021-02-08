@@ -4,7 +4,7 @@ MovieMatrix::MovieMatrix(int width, int height, int fontWidth, int fontHeight)
     : Engine(width, height, fontWidth, fontHeight)
 {
     srand(time(NULL));
-    timer = .0f;
+    timePassed = .0f;
     timerCharacterChange = .0f;
     timerColorChange = .0f;
     timerEnding = .0f;
@@ -40,7 +40,7 @@ bool MovieMatrix::Start()
 
 bool MovieMatrix::Update(float deltaTime)
 {
-    timer += deltaTime;
+    timePassed += deltaTime;
     timerCharacterChange += deltaTime;
     timerColorChange += deltaTime;
     timerEnding += deltaTime;
@@ -60,7 +60,7 @@ bool MovieMatrix::Update(float deltaTime)
         }
 
     //Move active column positions down and wrap coordinates around the screen every .05s
-    if (timer >= .05f)
+    if (timePassed >= .05f)
     {
         for (auto& i : activePositions)
         {
@@ -69,7 +69,7 @@ bool MovieMatrix::Update(float deltaTime)
                 i.y = 0;
         }
 
-        timer -= .05f;
+        timePassed -= .05f;
     }
 
     //Randomize half of the characters every .5s and handle smooth column appearance

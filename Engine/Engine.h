@@ -49,6 +49,7 @@ public:
 	Position() : x(0), y(0) {}
 	Position(int x, int y) : x(x), y(y) {}
 	Position operator+ (const Position& const other) const { return Position(x + other.x, y + other.y); }
+	void operator+= (const Position& const other) { x += other.x; y += other.y; }
 	bool operator== (const Position& const other) const { return x == other.x && y == other.y; }
 	bool operator!= (const Position& const other) const { return x != other.x || y != other.y; }
 
@@ -151,8 +152,10 @@ public:
 
 	void ClearScreen()
 	{
-		for (int i = 0; i < m_screenWidth * m_screenHeight; i++)
+		for (int i = 0; i < m_screenWidth * m_screenHeight; i++) {
 			m_screen[i].Char.UnicodeChar = ' ';
+			m_screen[i].Attributes = 0x00;
+		}
 	}
 
 	void Draw(int x, int y, short c = 0x2588, short color = 0x000F)
@@ -180,7 +183,7 @@ protected:
 	{
 		while (m_isRunning)
 		{
-			Timer timer(&m_deltaTime);
+			Timer timePassed(&m_deltaTime);
 
 			if (!Update(m_deltaTime))
 				m_isRunning = false;

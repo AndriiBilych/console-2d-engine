@@ -18,7 +18,7 @@ public:
     bool Update(float);
     ~MovieMatrix();
 private:
-    float timer;
+    float timePassed;
     float timerCharacterChange;
     float timerColorChange;
     float timerEnding;
