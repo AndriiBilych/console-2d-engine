@@ -8,11 +8,14 @@ Snake::Snake(int width, int height, int fontWidth, int fontHeight)
 	timerMove = .25f;
 	timePassedFood = .0f;
 	timerFood = 3.0f;
+	speed = 1.0f;
+	maxSpeed = 3.0f;
+	multiplier = 1.1f;
 	ChangeTitle(L"Snake");
 	scrHeight = GetScreenHeight();
 	scrWidth = GetScreenWidth();
 	bodySize = 10;
-	foodMax = 3;
+	foodMax = 5;
 	score = 0;
 	body.reserve(200);
 	food.reserve(foodMax);
@@ -39,7 +42,7 @@ bool Snake::Update(float timeElapsed) {
 		HandleInput();
 
 		//Timer for snake movement
-		timePassedMove += timeElapsed;
+		timePassedMove += timeElapsed * speed;
 		if (timePassedMove >= timerMove)
 		{
 			MoveSnake();
@@ -96,6 +99,7 @@ void Snake::HandleInput() {
 }
 
 void Snake::MoveSnake() {
+	auto stashedPos = body[body.size() - 1];
 	for (int i = body.size() - 1; i >= 0; i--) 
 		if (i > 0)
 			body[i] = body[i - 1];
@@ -107,15 +111,17 @@ void Snake::MoveSnake() {
 
 	if (it != end(food)) {
 		score++;
+		if (speed < maxSpeed && score % 5 == 0) speed *= multiplier;
 		food.erase(it);
+		body.emplace_back(stashedPos);
 	}
 
 	//Screen overflow protection
 	if (!IsWithinScreen(body[0])) {
-		if (body[0].x < 0) body[0].x = scrWidth;
-		else if (body[0].x > scrWidth) body[0].x = 0;
-		else if (body[0].y < 0) body[0].y = scrHeight;
-		else if (body[0].y > scrHeight) body[0].y = 0;
+		if (body[0].x < 0) body[0].x = scrWidth - 1;
+		else if (body[0].x > scrWidth - 1) body[0].x = 0;
+		else if (body[0].y < 0) body[0].y = scrHeight - 1;
+		else if (body[0].y > scrHeight - 1) body[0].y = 0;
 	}
 	
 	//Detect collision with body

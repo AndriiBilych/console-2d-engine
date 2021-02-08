@@ -27,6 +27,9 @@ private:
     float timerMove;
     float timePassedFood;
     float timerFood;
+    float speed;
+    float maxSpeed;
+    float multiplier;
     int scrHeight;
     int scrWidth;
     int bodySize;
