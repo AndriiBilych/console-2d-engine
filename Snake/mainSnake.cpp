@@ -1,6 +1,4 @@
 /*Todo:
-* Collision with body
-* Food spawning
 * Food Picking up
 * Elongating the body
 * Score in the title

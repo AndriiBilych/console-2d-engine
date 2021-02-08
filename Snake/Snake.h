@@ -16,18 +16,25 @@ public:
     Snake(int, int, int, int);
     bool Start();
     bool Update(float);
-    void DisplaySnake();
+    void DisplayGame();
     void HandleInput();
     void MoveSnake();
+    void SpawnFood();
     bool IsWithinScreen(Position pos) const;
     ~Snake();
 private:
-    float timePassed;
-    float timer;
+    float timePassedMove;
+    float timerMove;
+    float timePassedFood;
+    float timerFood;
     int scrHeight;
     int scrWidth;
+    int bodySize;
+    int foodMax;
+    bool isGameover;
     Position increment;
     std::vector<Position> body;
+    std::vector<Position> food;
     Direction moveDir;
 };
 
