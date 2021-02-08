@@ -172,6 +172,11 @@ public:
 		swprintf_s(m_titleString, 256, s);
 	}
 
+	void ChangeTitle(const wchar_t* s, int num)
+	{
+		swprintf_s(m_titleString, 256, s, num);
+	}
+
 	void DrawTextToBuffer(int x, int y, std::string_view str)
 	{
 		for (int i = 0; i < str.length(); i++)
@@ -305,6 +310,7 @@ private:
 	int m_screenWidth;
 	int m_screenHeight;
 	wchar_t m_titleString[256];
+	std::string m_titleStr;
 	CHAR_INFO* m_screen;
 	HANDLE m_hConsole;
 	HANDLE m_hConsoleIn;

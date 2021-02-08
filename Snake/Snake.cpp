@@ -13,6 +13,7 @@ Snake::Snake(int width, int height, int fontWidth, int fontHeight)
 	scrWidth = GetScreenWidth();
 	bodySize = 10;
 	foodMax = 3;
+	score = 0;
 	body.reserve(200);
 	food.reserve(foodMax);
 
@@ -70,6 +71,9 @@ void Snake::DisplayGame() {
 
 	//draw food
 	std::for_each(begin(food), end(food), [this](Position p) { Draw(p.x, p.y, ' ', 0xC0); });
+
+	//Draw score
+	ChangeTitle(L"Score: %d", score);
 }
 
 void Snake::HandleInput() {
@@ -97,6 +101,14 @@ void Snake::MoveSnake() {
 			body[i] = body[i - 1];
 
 	body[0] += increment;
+
+	//Food picking up
+	auto it = std::find_if(begin(food), end(food), [=](Position p) { return p == body[0]; });
+
+	if (it != end(food)) {
+		score++;
+		food.erase(it);
+	}
 
 	//Screen overflow protection
 	if (!IsWithinScreen(body[0])) {

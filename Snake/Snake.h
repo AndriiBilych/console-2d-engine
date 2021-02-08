@@ -31,6 +31,7 @@ private:
     int scrWidth;
     int bodySize;
     int foodMax;
+    int score;
     bool isGameover;
     Position increment;
     std::vector<Position> body;

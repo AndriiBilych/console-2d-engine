@@ -1,7 +1,6 @@
 /*Todo:
-* Food Picking up
 * Elongating the body
-* Score in the title
+* Game speeding up
 */
 #include "Snake.h"
 
