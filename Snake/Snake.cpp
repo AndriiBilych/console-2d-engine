@@ -12,8 +12,8 @@ Snake::Snake(int width, int height, int fontWidth, int fontHeight)
 	maxSpeed = 3.0f;
 	multiplier = 1.1f;
 	ChangeTitle(L"Snake");
-	scrHeight = GetScreenHeight();
-	scrWidth = GetScreenWidth();
+	scrHeight = height;
+	scrWidth = width;
 	bodySize = 10;
 	foodMax = 5;
 	score = 0;

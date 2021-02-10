@@ -15,7 +15,9 @@ for timing functions and any scopes, Position class for representing two-dimensi
 Command and CommandHistory classes for the use of undo/redo functionality and recording certain events
 
 The entire engine is written in the header Engine.h. To use the engine a project class must inherit from the 
-Engine class. See projects for details.
+Engine class. Every project inherits from an Engine class. 
+
+Console width, height and buffer size in console defaults and properties must be set to the same values that an engine constructor sets in project's main file. See mainChess.cpp, mainSnake.cpp, mainLife.cpp, etc for details. Otherwise the scrollbars will appear on the console window
 	
 Projects: 
 - Chess engine
