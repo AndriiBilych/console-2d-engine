@@ -27,6 +27,6 @@ is copied to the main array of states.
 
 Features
 ---------
--All rules above apply
--Simulation can be paused/resumed by pressing spacebar
--During pause left click will activate clicked cell, right click will disable clicked cell
+- All rules above apply
+- Simulation can be paused/resumed by pressing spacebar
+- During pause left click will activate clicked cell, right click will disable clicked cell

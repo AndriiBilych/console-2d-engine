@@ -13,6 +13,6 @@ position of the head.
 
 Features
 ---------
--Snake wraps around the screen
--Score is displayed in the window title
--Game is over if you collide with your body
+- Snake wraps around the screen
+- Score is displayed in the window title
+- Game is over if you collide with your body
