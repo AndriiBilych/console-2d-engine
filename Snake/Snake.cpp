@@ -68,12 +68,12 @@ bool Snake::Update(float timeElapsed) {
 
 void Snake::DisplayGame() {
 	//draw head
-	Draw(body[0].x, body[0].y, ' ', 0x40);
+	Draw(body[0].x, body[0].y, ' ', BG_DARK_RED);
 	//draw body
-	std::for_each(std::next(begin(body)), end(body), [this](Position p) { Draw(p.x, p.y, ' ', 0x20); });
+	std::for_each(std::next(begin(body)), end(body), [this](Position p) { Draw(p.x, p.y, ' ', BG_DARK_GREEN); });
 
 	//draw food
-	std::for_each(begin(food), end(food), [this](Position p) { Draw(p.x, p.y, ' ', 0xC0); });
+	std::for_each(begin(food), end(food), [this](Position p) { Draw(p.x, p.y, ' ', BG_RED); });
 
 	//Draw score
 	ChangeTitle(L"Score: %d", score);

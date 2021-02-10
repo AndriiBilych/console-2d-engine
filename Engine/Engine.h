@@ -6,7 +6,8 @@ Engine is a greatly simplified version of olcConsoleGameEngine by javidx9.
 Engine accepts keyboard and mouse input by utilizing GetAsyncKeyState and ReadConsoleInput accordingly. Output of these functions 
 is then converted to three states for each key: pressed, released, held. Besides Engine class Engine.h also contains: Timer class 
 for timing functions and any scopes, Position class for representing two-dimensional coordinates and simplifying certain operations, 
-Command and CommandHistory classes for the use of undo/redo functionality and recording certain events
+Command and CommandHistory classes for the use of undo/redo functionality and recording certain events, Color enum with standard 
+windows console colors.
 
 	The entire engine is written in the header Engine.h. To use the engine a project class must inherit from the 
 Engine class. See projects for details.
@@ -22,6 +23,42 @@ Engine class. See projects for details.
 #include <fstream>
 #include <iostream>
 #include <string_view>
+
+enum COLOUR
+{
+	FG_BLACK =			0x0,
+	FG_DARK_BLUE =		0x1,
+	FG_DARK_GREEN =		0x2,
+	FG_DARK_CYAN =		0x3,
+	FG_DARK_RED =		0x4,
+	FG_DARK_MAGENTA =	0x5,
+	FG_DARK_YELLOW =	0x6,
+	FG_GREY =			0x7,
+	FG_DARK_GREY =		0x8,
+	FG_BLUE =			0x9,
+	FG_GREEN =			0xA,
+	FG_CYAN =			0xB,
+	FG_RED =			0xC,
+	FG_MAGENTA =		0xD,
+	FG_YELLOW =			0xE,
+	FG_WHITE =			0xF,
+	BG_BLACK =			0x00,
+	BG_DARK_BLUE =		0x10,
+	BG_DARK_GREEN =		0x20,
+	BG_DARK_CYAN =		0x30,
+	BG_DARK_RED =		0x40,
+	BG_DARK_MAGENTA =	0x50,
+	BG_DARK_YELLOW =	0x60,
+	BG_GREY =			0x70,
+	BG_DARK_GREY =		0x80,
+	BG_BLUE =			0x90,
+	BG_GREEN =			0xA0,
+	BG_CYAN =			0xB0,
+	BG_RED =			0xC0,
+	BG_MAGENTA =		0xD0,
+	BG_YELLOW =			0xE0,
+	BG_WHITE =			0xF0,
+};
 
 class Timer
 {

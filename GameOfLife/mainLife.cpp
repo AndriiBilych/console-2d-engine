@@ -1,8 +1,3 @@
-/*Todo:
-* incorporate color enum to engine
-* update readmes
-*/
-
 #include "Life.h"
 
 int main(int argc)

@@ -221,9 +221,9 @@ void Chess::DisplayChess() {
         //Draw checkerboard
         for (int x = 0; x < 8; x++) 
             if (y % 2 != 0 && x % 2 != 0 || y % 2 == 0 && x % 2 == 0)
-                Draw(x + checkerboardOriginX, y + checkerboardOriginY, ' ', 0x70);
+                Draw(x + checkerboardOriginX, y + checkerboardOriginY, ' ', BG_GREY);
             else
-                Draw(x + checkerboardOriginX, y + checkerboardOriginY, ' ', 0x80);
+                Draw(x + checkerboardOriginX, y + checkerboardOriginY, ' ', BG_DARK_GREY);
     }
 
     //Draw letters
@@ -243,17 +243,17 @@ void Chess::DisplayChess() {
         if (!p.isTaken) {
             auto attr = GetChar(p.pos.x, p.pos.y).Attributes;
             Draw(p.pos.x, p.pos.y, p.symbol, 
-                p.symbol == king && IsInCheck(p.color) ? attr & 0xF | 0xC0 : attr | (p.color ? 0xF : 0x0));
+                p.symbol == king && IsInCheck(p.color) ? attr & FG_WHITE | BG_RED : attr | (p.color ? FG_WHITE : FG_BLACK));
         }
         else
-            Draw(p.pos.x, p.pos.y, p.symbol, 0x80 | (p.color ? 0xF : 0x0));
+            Draw(p.pos.x, p.pos.y, p.symbol, BG_DARK_GREY | (p.color ? FG_WHITE : FG_BLACK));
 
     //Draw highlighted square and possible movement
     if (highlightedX != -1 && highlightedY != -1) {
         auto symbol = GetChar(highlightedX, highlightedY).Char.UnicodeChar;
         auto symbolAttributes = GetChar(highlightedX, highlightedY).Attributes;
 
-        Draw(highlightedX, highlightedY, symbol, symbolAttributes & 0xF | 0x60);
+        Draw(highlightedX, highlightedY, symbol, symbolAttributes & FG_WHITE | BG_DARK_YELLOW);
 
         if (possibleMovements.size() > 0)
             for (auto& p : possibleMovements) {
@@ -261,7 +261,7 @@ void Chess::DisplayChess() {
                 if (piece == nullptr)
                     Draw(p.x, p.y, ' ', 0xA0);
                 else
-                    Draw(p.x, p.y, piece->symbol, GetChar(p.x, p.y).Attributes & 0xF | 0xC0);
+                    Draw(p.x, p.y, piece->symbol, GetChar(p.x, p.y).Attributes & FG_WHITE | BG_RED);
             }
     }
 }

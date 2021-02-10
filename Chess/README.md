@@ -1,6 +1,12 @@
 Chess engine
 =====
 
+![Screenshot](Screenshot1.png)
+
+![Screenshot](Screenshot2.png)
+
+![Screenshot](Screenshot3.png)
+
 Description
 ---------
 This Project is a full implementation of Chess game including all rules, mechanics and conditions of the oficial Chess.

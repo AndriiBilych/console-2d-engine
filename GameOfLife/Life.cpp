@@ -29,25 +29,33 @@ bool Life::Update(float timeElapsed) {
 	//Draw states
 	for (size_t y = 0; y < screenHeight; y++)
 		for (size_t x = 0; x < screenWidth; x++)
-			Draw(x, y, ' ', states[y * screenWidth + x] ? 0x70 : 0x00);
+			Draw(x, y, ' ', states[y * screenWidth + x] ? BG_GREY : BG_BLACK);
 	
 	//Change title
 	if (isPaused) 
-		ChangeTitle(L"Conway's game of life (paused) - space to run/pause");
+		ChangeTitle(L"Conway's game of life (PAUSED)");
 	else
-		ChangeTitle(L"Conway's game of life (running) - space to run/pause");
+		ChangeTitle(L"Conway's game of life (RUNNING)");
 
 	//Pause simulation
 	if (GetKey(VK_SPACE).pressed)
 		isPaused = !isPaused;
 
-	//Change state of the pressed cell
-	if (GetMouse(0).pressed && isPaused) {
+	//Change states of selected cells
+	if (GetMouse(0).held && isPaused) {
 		auto xPos = GetMouseX();
 		auto yPos = GetMouseY();
 
-		states[yPos * screenWidth + xPos] = !states[yPos * screenWidth + xPos];
-		nextGeneration[yPos * screenWidth + xPos] = !nextGeneration[yPos * screenWidth + xPos];
+		states[yPos * screenWidth + xPos] = true;
+		nextGeneration[yPos * screenWidth + xPos] = true;
+	}
+	
+	if (GetMouse(1).held && isPaused) {
+		auto xPos = GetMouseX();
+		auto yPos = GetMouseY();
+
+		states[yPos * screenWidth + xPos] = false;
+		nextGeneration[yPos * screenWidth + xPos] = false;
 	}
 
 	//Calculate next generation
