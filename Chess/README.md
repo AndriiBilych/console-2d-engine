@@ -9,7 +9,7 @@ Chess engine
 
 Description
 ---------
-This Project is a full implementation of Chess game including all rules, mechanics and conditions of the oficial Chess.
+This Project is a full implementation of Chess game including all rules, mechanics and conditions of the official Chess.
 This is going to be upgraded and optimised in the future. It is possible to play against another person or a simple bot 
 that makes random moves. Chess engine uses command pattern to record the game and to check the legality of the moves. Game 
 log is created upon finishing the game containing recorded game in standard Chess notation.
