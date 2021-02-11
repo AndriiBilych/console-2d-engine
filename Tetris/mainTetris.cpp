@@ -1,8 +1,19 @@
+/*TODO:
+* draw shapes
+* make shapes fall
+* collisions
+* rotations
+* row disappearance
+* score 
+* figure forecasting
+* field is 10x20
+*/
+
 #include "Tetris.h"
 
 int main(int argc)
 {
-	Tetris game(60, 40, 14, 14);
+	Tetris game(20, 20, 20, 20);
 	game.StartExecution();
 
 	return 0;

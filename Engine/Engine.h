@@ -204,6 +204,10 @@ public:
 		}
 	}
 
+	void Draw(Position p, short c = 0x2588, short color = 0x000F) {
+		Draw(p.x, p.y, c, color);
+	}
+
 	void ChangeTitle(const wchar_t* s)
 	{
 		swprintf_s(m_titleString, 256, s);
