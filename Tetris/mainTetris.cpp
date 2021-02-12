@@ -1,7 +1,7 @@
 /*TODO:
-* draw shapes
-* make shapes fall
+* draw squares
 * collisions
+* side collisions
 * rotations
 * row disappearance
 * score 

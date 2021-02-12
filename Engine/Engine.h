@@ -85,6 +85,7 @@ class Position {
 public:
 	Position() : x(0), y(0) {}
 	Position(int x, int y) : x(x), y(y) {}
+	void operator= (const Position& const other) { x = other.x; y = other.y; }
 	Position operator+ (const Position& const other) const { return Position(x + other.x, y + other.y); }
 	Position operator- (const Position& const other) const { return Position(x - other.x, y - other.y); }
 	void operator+= (const Position& const other) { x += other.x; y += other.y; }
