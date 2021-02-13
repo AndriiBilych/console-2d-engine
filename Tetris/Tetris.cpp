@@ -6,6 +6,7 @@ Tetris::Tetris(int width, int height, int fontWidth, int fontHeight)
 	currentShape.statesAmount = one;
 	currentShape.p = Position(1, 1);
 	currentShape.color = BG_GREEN;
+	srand(time(NULL));
 
 	isSpedUp = false;
 
@@ -26,11 +27,13 @@ bool Tetris::Update(float timeElapsed) {
 
 	ClearScreen();
 
+	DrawSquares();
+
 	DrawShape();
 
 	if (GetKey(VK_UP).pressed) {
-		currentShape.index = currentShape.index == 5 ? 6 : 5;
-		std::copy(&(figures[currentShape.index][0]), &(figures[currentShape.index][4]), currentShape.coords);
+		//currentShape.index = currentShape.index == 5 ? 6 : 5;
+		//std::copy(&(figures[currentShape.index][0]), &(figures[currentShape.index][4]), currentShape.coords);
 	}
 	//faster descend
 	else if (GetKey(VK_DOWN).held && !isSpedUp) {
@@ -52,13 +55,14 @@ bool Tetris::Update(float timeElapsed) {
 	if (timePassed >= timer)
 	{
 		auto lowestPoint = currentShape.p + currentShape.coords[3];
-		if (lowestPoint.y < GetScreenHeight() - 1)
-			currentShape.p += Position(0, 1);
-		else {
-			for (auto p : currentShape.coords) {
-				squares.emplace_back(Square(p, currentShape.color));
+		if (lowestPoint.y == GetScreenHeight() - 1 || IsColliding()) {
+			for (auto coords : currentShape.coords) {
+				squares.emplace_back(Square(currentShape.p + coords, currentShape.color));
 			}
 			NewShape();
+		}
+		else {
+			currentShape.p += Position(0, 1);
 		}
 
 		timePassed -= timer;
@@ -67,9 +71,16 @@ bool Tetris::Update(float timeElapsed) {
 	return true;
 }
 
-bool Tetris::IsColliding(Square s) {
-
-	return true;
+bool Tetris::IsColliding() {
+	auto lowestPoint = currentShape.p + currentShape.coords[3];
+	bool result = false;
+	for (auto coord :currentShape.coords) {
+		if (currentShape.p.y + coord.y == lowestPoint.y 
+			&& !(GetChar(currentShape.p.x + coord.x, currentShape.p.y + coord.y + 1).Attributes == 0)) {
+			result = true;
+		}
+	}
+	return result;
 }
 
 void Tetris::DrawShape() {
@@ -78,13 +89,19 @@ void Tetris::DrawShape() {
 	}
 }
 
+void Tetris::DrawSquares() {
+	for (auto s : squares) {
+		Draw(s.p, ' ', s.color);
+	}
+}
 
 void Tetris::NewShape() {
-	currentShape.index = 0;
-	currentShape.statesAmount = one;
-	currentShape.color = BG_RED;
-	currentShape.p = Position(0, 0);
-	std::copy(&(figures[currentShape.index][0]), &(figures[currentShape.index][4]), currentShape.coords);
+	auto i = rand() % 7;
+	currentShape.index = indices[i];
+	currentShape.statesAmount = (i == 0 ? one : ((i == 1 || i == 2 || i == 3) ? two : four));
+	currentShape.color = colors[i];
+	currentShape.p = Position(4, 0);
+	std::copy(&(figures[indices[i]][0]), &(figures[indices[i]][4]), currentShape.coords);
 }
 
 int Tetris::NextRotation(int) {

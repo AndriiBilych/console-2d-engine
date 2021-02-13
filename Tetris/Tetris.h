@@ -34,8 +34,9 @@ public:
     Tetris(int, int, int, int);
     bool Start();
     bool Update(float);
-    bool IsColliding(Square);
+    bool IsColliding();
     void DrawShape();
+    void DrawSquares();
     void NewShape();
     int NextRotation(int);
     ~Tetris();
@@ -46,6 +47,8 @@ private:
     float timePassed;
     std::vector<Square> squares;
     Shape currentShape;
+    int indices[7] = { 0, 1, 3, 5, 7, 11, 17};
+    signed short colors[7] = { BG_RED, BG_BLUE, BG_GREEN, BG_YELLOW, BG_CYAN, BG_MAGENTA, BG_DARK_YELLOW };
     Position figures[19][4] = {
         //Last position must always be the lowest point of the figure (highest y)
         { Position(0, 0), Position(1, 0), Position(0, 1), Position(1, 1) }, //0 square boi
