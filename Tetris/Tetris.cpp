@@ -2,11 +2,8 @@
 
 Tetris::Tetris(int width, int height, int fontWidth, int fontHeight)
 	: Engine(width, height, fontWidth, fontHeight) {
-	currentShape.index = 8;
-	currentShape.statesAmount = one;
-	currentShape.p = Position(1, 1);
-	currentShape.color = BG_GREEN;
 	srand(time(NULL));
+	NewShape();
 
 	isSpedUp = false;
 
@@ -32,8 +29,7 @@ bool Tetris::Update(float timeElapsed) {
 	DrawShape();
 
 	if (GetKey(VK_UP).pressed) {
-		//currentShape.index = currentShape.index == 5 ? 6 : 5;
-		//std::copy(&(figures[currentShape.index][0]), &(figures[currentShape.index][4]), currentShape.coords);
+		NextRotation();
 	}
 	//faster descend
 	else if (GetKey(VK_DOWN).held && !isSpedUp) {
@@ -104,9 +100,15 @@ void Tetris::NewShape() {
 	std::copy(&(figures[indices[i]][0]), &(figures[indices[i]][4]), currentShape.coords);
 }
 
-int Tetris::NextRotation(int) {
-
-	return 0;
+void Tetris::NextRotation() {
+	if (currentShape.statesAmount == two)
+		currentShape.index += std::find(indices, &indices[7], currentShape.index) == &indices[7] ? -1 : 1;
+	else if (currentShape.statesAmount == four) {
+		currentShape.index++;
+		if (std::find(indices, &indices[7], currentShape.index) != &indices[7] || currentShape.index > 18)
+			currentShape.index -= 4;
+	}
+	std::copy(&(figures[currentShape.index][0]), &(figures[currentShape.index][4]), currentShape.coords);
 }
 
 Tetris::~Tetris() {

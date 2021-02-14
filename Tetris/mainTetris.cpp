@@ -2,7 +2,6 @@
 * side collisions
 * screen side collisions
 * north t boi collisions
-* rotations
 * row disappearance
 * score 
 * figure forecasting

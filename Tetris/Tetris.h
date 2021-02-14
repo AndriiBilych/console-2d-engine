@@ -38,7 +38,7 @@ public:
     void DrawShape();
     void DrawSquares();
     void NewShape();
-    int NextRotation(int);
+    void NextRotation();
     ~Tetris();
 private:
     bool isSpedUp;
@@ -47,7 +47,7 @@ private:
     float timePassed;
     std::vector<Square> squares;
     Shape currentShape;
-    int indices[7] = { 0, 1, 3, 5, 7, 11, 17};
+    int indices[7] = { 0, 1, 3, 5, 7, 11, 15};
     signed short colors[7] = { BG_RED, BG_BLUE, BG_GREEN, BG_YELLOW, BG_CYAN, BG_MAGENTA, BG_DARK_YELLOW };
     Position figures[19][4] = {
         //Last position must always be the lowest point of the figure (highest y)
@@ -63,19 +63,19 @@ private:
         { Position(0, 0), Position(1, 0), Position(1, 1), Position(2, 1) }, //6 z boi - horizontal
 
         { Position(0, 0), Position(0, 1), Position(0, 2), Position(1, 2) }, //7 L boi - south
-        { Position(0, 0), Position(1, 0), Position(2, 0), Position(0, 1) }, //8 L boi - east
+        { Position(0, 0), Position(1, 0), Position(2, 0), Position(0, 1) }, //8 L boi - west
         { Position(0, 0), Position(1, 0), Position(1, 1), Position(1, 2) }, //9 L boi - north
-        { Position(2, 0), Position(2, 1), Position(1, 1), Position(0, 1) }, //10 L boi - west
+        { Position(0, 1), Position(1, 1), Position(2, 0), Position(2, 1) }, //10 L boi - east
 
         { Position(1, 0), Position(1, 1), Position(1, 2), Position(0, 2) }, //11 J boi - south
-        { Position(0, 0), Position(1, 0), Position(2, 0), Position(2, 1) }, //12 J boi - east
+        { Position(0, 0), Position(0, 1), Position(1, 1), Position(2, 1) }, //12 J boi - west
         { Position(1, 0), Position(0, 0), Position(0, 1), Position(0, 2) }, //13 J boi - north
-        { Position(0, 0), Position(0, 1), Position(1, 1), Position(2, 1) }, //14 J boi - west
+        { Position(0, 0), Position(1, 0), Position(2, 0), Position(2, 1) }, //14 J boi - east
 
-        { Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1) }, //17 t boi - north
-        { Position(1, 0), Position(1, 1), Position(0, 1), Position(1, 2) }, //16 t boi - east
         { Position(0, 1), Position(1, 0), Position(1, 1), Position(2, 1) }, //15 t boi - south
-        { Position(0, 0), Position(0, 1), Position(1, 1), Position(0, 2) } //18 t boi - west
+        { Position(0, 0), Position(0, 1), Position(1, 1), Position(0, 2) }, //16 t boi - west
+        { Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1) }, //17 t boi - north
+        { Position(1, 0), Position(1, 1), Position(0, 1), Position(1, 2) } //18 t boi - east
     };
 };
 
