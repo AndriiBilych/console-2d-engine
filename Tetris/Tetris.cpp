@@ -41,17 +41,21 @@ bool Tetris::Update(float timeElapsed) {
 		isSpedUp = false;
 	}
 
-	if (GetKey(VK_RIGHT).pressed) 
+	if (GetKey(VK_RIGHT).pressed && !IsCollidingRight()) 
 		currentShape.p += Position(1, 0);
-	else if (GetKey(VK_LEFT).pressed) 
+	else if (GetKey(VK_LEFT).pressed && !IsCollidingLeft()) 
 		currentShape.p -= Position(1, 0);
 	
+	//debugging
+	if (GetKey(VK_SPACE).pressed)
+		isPaused = !isPaused;
+
 	//Timer for descending
-	timePassed += timeElapsed * speed;
+	timePassed += isPaused ? 0 : timeElapsed * speed;
 	if (timePassed >= timer)
 	{
 		auto lowestPoint = currentShape.p + currentShape.coords[3];
-		if (lowestPoint.y == GetScreenHeight() - 1 || IsColliding()) {
+		if (lowestPoint.y == GetScreenHeight() - 1 || IsCollidingDown()) {
 			for (auto coords : currentShape.coords) {
 				squares.emplace_back(Square(currentShape.p + coords, currentShape.color));
 			}
@@ -67,16 +71,45 @@ bool Tetris::Update(float timeElapsed) {
 	return true;
 }
 
-bool Tetris::IsColliding() {
-	auto lowestPoint = currentShape.p + currentShape.coords[3];
-	bool result = false;
-	for (auto coord :currentShape.coords) {
-		if (currentShape.p.y + coord.y == lowestPoint.y 
-			&& !(GetChar(currentShape.p.x + coord.x, currentShape.p.y + coord.y + 1).Attributes == 0)) {
-			result = true;
+bool Tetris::IsCollidingDown() {
+	for (auto coord : currentShape.coords) {
+		auto calculatedPos = currentShape.p + coord + Position(0, 1);
+		if (IsWithinCoords(calculatedPos) 
+			&& ((IsWithinSquares(calculatedPos) || calculatedPos.y == GetScreenHeight()))) {
+			return true;
 		}
 	}
-	return result;
+	return false;
+}
+
+bool Tetris::IsCollidingLeft() {
+	for (auto coord : currentShape.coords) {
+		auto calculatedPos = currentShape.p + coord + Position(-1, 0);
+		if (IsWithinCoords(calculatedPos) 
+			&& ((IsWithinSquares(calculatedPos) || calculatedPos.x < 0))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Tetris::IsCollidingRight() {
+	for (auto coord : currentShape.coords) {
+		auto calculatedPos = currentShape.p + coord + Position(1, 0);
+		if (IsWithinCoords(calculatedPos) 
+			&& ((IsWithinSquares(calculatedPos) || calculatedPos.x == GetScreenWidth()))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Tetris::IsWithinCoords(Position calculatedPos) {
+	return std::none_of(currentShape.coords, &currentShape.coords[4], [=](Position p) { return calculatedPos == currentShape.p + p; });
+}
+
+bool Tetris::IsWithinSquares(Position calculatedPos) {
+	return std::any_of(begin(squares), end(squares), [=](Square s) { return calculatedPos == s.p; });;
 }
 
 void Tetris::DrawShape() {

@@ -381,6 +381,7 @@ public:
 	int GetScreenWidth() const { return m_screenWidth; }
 	int GetScreenHeight() const { return m_screenHeight; }
 	CHAR_INFO GetChar(int x, int y) const { return m_screen[y * m_screenWidth + x]; }
+	CHAR_INFO GetChar(Position p) const { return m_screen[p.y * m_screenWidth + p.x]; }
 	keyState GetKey(unsigned short n) const { 
 		if (n < 256)
 			return m_keys[n];

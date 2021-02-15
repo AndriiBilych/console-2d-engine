@@ -34,7 +34,11 @@ public:
     Tetris(int, int, int, int);
     bool Start();
     bool Update(float);
-    bool IsColliding();
+    bool IsCollidingDown();
+    bool IsCollidingLeft();
+    bool IsCollidingRight();
+    bool IsWithinCoords(Position);
+    bool IsWithinSquares(Position);
     void DrawShape();
     void DrawSquares();
     void NewShape();
@@ -42,6 +46,7 @@ public:
     ~Tetris();
 private:
     bool isSpedUp;
+    bool isPaused;
     float timer;
     float speed;
     float timePassed;

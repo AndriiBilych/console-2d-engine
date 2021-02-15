@@ -1,6 +1,5 @@
 /*Todo:
-* add chess to main readme
-* features list in readme
+* https://www.youtube.com/watch?v=U4ogK0MIzqk
 * 
 * Extras----------------------------------------------------------------------
 * 
