@@ -6,6 +6,7 @@ Tetris::Tetris(int width, int height, int fontWidth, int fontHeight)
 	NewShape();
 
 	isSpedUp = false;
+	isGameover = false;
 
 	timePassed = .0f;
 	timer = 1.0f;
@@ -28,47 +29,58 @@ bool Tetris::Update(float timeElapsed) {
 
 	DrawShape();
 
-	if (GetKey(VK_UP).pressed) {
-		NextRotation();
-	}
-	//faster descend
-	else if (GetKey(VK_DOWN).held && !isSpedUp) {
-		speed *= 35;
-		isSpedUp = true;
-	}
-	else if (GetKey(VK_DOWN).released && isSpedUp) {
-		speed /= 35;
-		isSpedUp = false;
-	}
+	if (!isGameover) {
+		isGameover = IsLost();
 
-	if (GetKey(VK_RIGHT).pressed && !IsCollidingRight()) 
-		currentShape.p += Position(1, 0);
-	else if (GetKey(VK_LEFT).pressed && !IsCollidingLeft()) 
-		currentShape.p -= Position(1, 0);
+		if (GetKey(VK_UP).pressed) {
+			NextRotation();
+		}
+		//faster descend
+		else if (GetKey(VK_DOWN).held && !isSpedUp) {
+			speed *= 35;
+			isSpedUp = true;
+		}
+		else if (GetKey(VK_DOWN).released && isSpedUp) {
+			speed /= 35;
+			isSpedUp = false;
+		}
+
+		if (GetKey(VK_RIGHT).pressed && !IsCollidingRight()) 
+			currentShape.p += Position(1, 0);
+		else if (GetKey(VK_LEFT).pressed && !IsCollidingLeft()) 
+			currentShape.p -= Position(1, 0);
 	
-	//debugging
-	if (GetKey(VK_SPACE).pressed)
-		isPaused = !isPaused;
+		//debugging
+		if (GetKey(VK_SPACE).pressed)
+			isPaused = !isPaused;
 
-	//Timer for descending
-	timePassed += isPaused ? 0 : timeElapsed * speed;
-	if (timePassed >= timer)
-	{
-		auto lowestPoint = currentShape.p + currentShape.coords[3];
-		if (lowestPoint.y == GetScreenHeight() - 1 || IsCollidingDown()) {
-			for (auto coords : currentShape.coords) {
-				squares.emplace_back(Square(currentShape.p + coords, currentShape.color));
+		//Timer for descending
+		timePassed += isPaused ? 0 : timeElapsed * speed;
+		if (timePassed >= timer)
+		{
+			auto lowestPoint = currentShape.p + currentShape.coords[3];
+			if (lowestPoint.y == GetScreenHeight() - 1 || IsCollidingDown()) {
+				for (auto coords : currentShape.coords) {
+					squares.emplace_back(Square(currentShape.p + coords, currentShape.color));
+				}
+				NewShape();
 			}
-			NewShape();
-		}
-		else {
-			currentShape.p += Position(0, 1);
-		}
+			else {
+				currentShape.p += Position(0, 1);
+			}
 
-		timePassed -= timer;
+			timePassed -= timer;
+		}
+	}
+	else {
+		ChangeTitle(L"You Lost!");
 	}
 
 	return true;
+}
+
+bool Tetris::IsLost() {
+	return std::any_of(begin(squares), end(squares), [](Square s) { return s.p.y == -1; });
 }
 
 bool Tetris::IsCollidingDown() {
@@ -129,7 +141,7 @@ void Tetris::NewShape() {
 	currentShape.index = indices[i];
 	currentShape.statesAmount = (i == 0 ? one : ((i == 1 || i == 2 || i == 3) ? two : four));
 	currentShape.color = colors[i];
-	currentShape.p = Position(4, 0);
+	currentShape.p = Position(5, -1);
 	std::copy(&(figures[indices[i]][0]), &(figures[indices[i]][4]), currentShape.coords);
 }
 

@@ -2,10 +2,9 @@
 * row disappearing
 * score 
 * figure forecasting
-* field is 10x20
+* field is 10x20 (frame)
 * side movement speed up
 * when changing rotation next to the right side offset
-* lose mechanic
 */
 
 #include "Tetris.h"
