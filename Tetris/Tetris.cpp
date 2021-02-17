@@ -32,6 +32,8 @@ bool Tetris::Update(float timeElapsed) {
 	if (!isGameover) {
 		isGameover = IsLost();
 
+		DestroyRowAndUpdate();
+
 		if (GetKey(VK_UP).pressed) {
 			NextRotation();
 		}
@@ -122,6 +124,36 @@ bool Tetris::IsWithinCoords(Position calculatedPos) {
 
 bool Tetris::IsWithinSquares(Position calculatedPos) {
 	return std::any_of(begin(squares), end(squares), [=](Square s) { return calculatedPos == s.p; });;
+}
+
+void Tetris::DestroyRowAndUpdate() {
+	auto row = GetFullRow();
+	if (row != -1) {
+		//Erase row
+		std::vector<Square>::iterator it = end(squares);
+		do {
+			if (it != end(squares))
+				squares.erase(it);
+			it = std::find_if(begin(squares), end(squares), [=](Square s) { return s.p.y == row; });
+		} while (it != end(squares));
+
+		//Update squares
+		for (int i = 0; i < squares.size(); i++)
+		{
+			if (squares[i].p.y < row)
+				squares[i].p.y++;
+		}
+	}
+}
+
+int Tetris::GetFullRow() {
+	for (int i = 0; i < GetScreenHeight(); i++)
+	{
+		auto b = std::count_if(begin(squares), end(squares), [=](Square s) { return s.p.y == i; });
+		if ( b == GetScreenWidth())
+			return i;
+	}
+	return -1;
 }
 
 void Tetris::DrawShape() {

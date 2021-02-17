@@ -40,6 +40,8 @@ public:
     bool IsCollidingRight();
     bool IsWithinCoords(Position);
     bool IsWithinSquares(Position);
+    void DestroyRowAndUpdate();
+    int GetFullRow();
     void DrawShape();
     void DrawSquares();
     void NewShape();
